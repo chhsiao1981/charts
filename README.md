@@ -1,5 +1,6 @@
 # ![logo](./logo_chris.png) khris-helm
 
+[![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fkhris-helm%2Fmaster%2Fcharts%2Fchris-cube%2FChart.yaml&query=%24.version&label=version)](https://fnndsc.github.io/khris-helm)
 [![MIT License](https://img.shields.io/github/license/fnndsc/khris-helm)](https://github.com/FNNDSC/khris-helm/blob/main/LICENSE)
 [![ci](https://github.com/FNNDSC/khris-helm/actions/workflows/ci.yml/badge.svg)](https://github.com/FNNDSC/khris-helm/actions/workflows/ci.yml)
 
@@ -41,16 +42,17 @@ helm repo add fnndsc-khris https://fnndsc.github.io/khris-helm
 If you had already added this repo earlier, run `helm repo update` to retrieve
 the latest versions of the packages.  You can then run `helm search repo fnndsc-khris` to see the charts.
 
-To install the `chris-cube` chart:
+To install the `chris-cube` chart, download a copy of [values.yaml](./charts/chris-cube/values.yaml)
+and modify its values to suit your needs. Then run
 
 ```shell
-helm install my-cube-instance fnndsc-khris/chris-cube
+helm install -n cube -f my-values.yaml my-cube-instance fnndsc-khris/chris-cube
 ```
 
 To uninstall the chart:
 
 ```shell
-helm delete my-cube-instance
+helm delete -n cube my-cube-instance
 ```
 
 ### NFS Server Workarounds

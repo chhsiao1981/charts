@@ -17,7 +17,7 @@ jobs:
     - name: Install chris-cube
       run: |
         helm install --create-namespace --namespace ghactions khris-test \
-          -f testing/ghactions-values.yml --set nodePortHost=$(hostname) .
+          -f testing/ghactions-values.yml --set nodePortHost=$(hostname) ./charts/chris-cube
 
     - name: Wait for migrations to complete
       run: ./testing/wait_for_migration.sh -n ghactions
