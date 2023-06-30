@@ -67,6 +67,12 @@ docker build -t internal.registry/fnndsc/cube:latest --build-arg UID=123456 http
 docker push internal.registry/fnndsc/cube:latest
 ```
 
+Alternatively, using OpenShift BuildConfigs:
+
+```shell
+oc new-build https://github.com/FNNDSC/ChRIS_ultron_backEnd --build-arg=UID=1001090000 --name=cube
+```
+
 `values.yaml` should have the corresponding values set:
 
 ```yaml
