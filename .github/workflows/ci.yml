@@ -34,6 +34,7 @@ jobs:
   
   # https://helm.sh/docs/howto/chart_releaser_action/
   release:
+    needs: [ test ]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
