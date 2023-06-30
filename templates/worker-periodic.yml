@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker-periodic
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: cube-worker-periodic
+    app.kubernetes.io/instance: {{ .Release.Name }}-worker-periodic
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    kubernetes.io/description: "ChRIS backend periodic tasks"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}-worker-periodic
+  template:
+    metadata:
+      name: {{ .Release.Name }}-periodic-tasks
+      labels:
+        app.kubernetes.io/name: cube-worker-periodic
+        app.kubernetes.io/instance: {{ .Release.Name }}-worker-periodic
+        app.kubernetes.io/part-of: {{ .Release.Name }}
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      containers:
+      - name: worker-periodic
+        image: {{ .Values.image }}
+        command: ["celery", "-A", "core", "worker", "-c", "2", "-l", "info", "-Q", "periodic"]
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-cube-config
+        - secretRef:
+            name: {{ .Release.Name }}-db-config
+        - secretRef:
+            name: {{ .Release.Name }}-django-secret
+        volumeMounts:
+        - mountPath: /var/chris
+          name: file-storage
+
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-cube-files
+
+      {{- if .Values.securityContext }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- end }}

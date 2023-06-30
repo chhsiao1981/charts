@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-cube-files
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: cube-files-storage
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: helm
+spec:
+  {{- if .Values.storageClassName }}
+  storageClassName: {{ .Values.storageClassName }}
+  {{- end }}
+  accessModes:
+  {{- toYaml .Values.files.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.files.resources.requests.storage }}
+

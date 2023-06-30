@@ -1,0 +1,28 @@
+nodePort: "32000"
+
+# Resource requests are lowered for Github's VMs
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+workerMains:
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 200m
+server:
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+db:
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 1Gi
+      cpu: 500m

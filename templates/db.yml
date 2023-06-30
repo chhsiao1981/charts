@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/instance: {{ .Release.Name }}-db
+    app.kubernetes.io/version: "13"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    kubernetes.io/description: "Database for ChRIS"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}-db
+  template:
+    metadata:
+      name: {{ .Release.Name }}-db
+      labels:
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/instance: {{ .Release.Name }}-db
+        app.kubernetes.io/version: "13"
+        app.kubernetes.io/component: database
+        app.kubernetes.io/part-of: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: helm
+    spec:
+      containers:
+      - name: postgres
+        image: docker.io/library/postgres:13
+        ports:
+        - name: postgres
+          containerPort: 5432
+        env:
+        # permissions workaround
+        # https://github.com/docker-library/postgres/issues/1065
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        envFrom:
+        - secretRef:
+            name: {{ .Release.Name }}-db-config
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          {{- toYaml .Values.db.resources | nindent 10 }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-db-data
+
+      {{- if .Values.securityContext }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- end }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-db-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: postgres-data
+    app.kubernetes.io/instance: {{ .Release.Name }}-db-data
+    app.kubernetes.io/version: "13"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+spec:
+  {{- if .Values.storageClassName }}
+  storageClassName: {{ .Values.storageClassName }}
+  {{- end }}
+  accessModes:
+  {{- toYaml .Values.db.volume.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.db.volume.resources.requests.storage }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: postgres-service
+    app.kubernetes.io/instance: {{ .Release.Name }}-postgres-service
+    app.kubernetes.io/version: "13"
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}-db
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432

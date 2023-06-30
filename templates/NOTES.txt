@@ -1,0 +1,15 @@
+Please wait a while as CUBE is running database migrations (1-2 minutes).
+When the server comes online, you'll probably want to create a superuser:
+
+    kubectl exec -it{{with .Release.Namespace}} -n {{.}}{{end}} $(kubectl get pods{{with .Release.Namespace}} -n {{.}}{{end}} -l 'app.kubernetes.io/instance={{ .Release.Name }}-server' -o name) -- python manage.py createsuperuser
+
+After a superuser has been created, upload some plugins and then you're off to the races!
+Initial setup of CUBE past superuser creation can be automated using chrisomatic.
+https://github.com/FNNDSC/chrisomatic
+
+{{ if (and .Values.nodePort .Values.nodePortHost) }}
+Your CUBE API address is:
+
+    http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/
+
+{{- end }}

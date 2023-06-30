@@ -1,0 +1,66 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-cube-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    kubernetes.io/description: "Configuration of ChRIS backend"
+data:
+  {{- toYaml .Values.config | nindent 2 }}
+
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  STATIC_ROOT: "/home/localuser/mod_wsgi-0.0.0.0:8000/htdocs/static/"
+  CHRIS_STORE_URL: "https://chrisstore.co/api/v1/"
+  DEFAULT_FILE_STORAGE: "django.core.files.storage.FileSystemStorage"
+  MEDIA_ROOT: "/var/chris"
+
+  DATABASE_HOST: "{{ .Release.Name }}-db"
+  DATABASE_PORT: "5432"
+  CELERY_BROKER_URL: "amqp://{{ .Release.Name }}-rabbitmq:5672"
+
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{ .Release.Name }}-django-secret
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    kubernetes.io/description: "https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-SECRET_KEY"
+data:
+  {{- if .Release.IsUpgrade }}
+  DJANGO_SECRET_KEY:  {{ index (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-django-secret")).data "DJANGO_SECRET_KEY" }}
+  {{ else }}
+  DJANGO_SECRET_KEY: {{ randAlphaNum 32 | b64enc }}
+  {{ end }}
+
+---
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{ .Release.Name }}-db-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: helm
+  annotations:
+    kubernetes.io/description: "Configuration of a PostgresSQL database used by the ChRIS backend"
+data:
+  POSTGRES_DB: {{ "chris" | b64enc | quote }}
+  POSTGRES_USER: {{ "chris" | b64enc | quote }}
+  {{- if .Release.IsUpgrade }}
+  POSTGRES_PASSWORD:  {{ index (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-db-config")).data "POSTGRES_PASSWORD" }}
+  {{ else }}
+  POSTGRES_PASSWORD: {{ randAlphaNum 32 | b64enc }}
+  {{ end }}

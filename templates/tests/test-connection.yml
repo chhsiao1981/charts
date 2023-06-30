@@ -1,0 +1,18 @@
+{{- if (and .Values.nodePort .Values.nodePortHost ) }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-check-server-is-up"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: "{{ .Release.Name }}-check-server-is-up"
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/']
+  restartPolicy: Never
+{{- end }}

@@ -1,0 +1,79 @@
+## Use nodePort for ingress
+# nodePort: "32000"
+## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
+# nodePortHost: my_hostname
+
+## version and repo of image for ChRIS backend
+image: ghcr.io/fnndsc/cube:4.0.0.pre12
+
+files:
+  accessModes:
+  - ReadWriteOnce
+  ## storage class to use for ChRIS files storage
+  resources:
+    requests:
+      ## how much storage for ChRIS files
+      storage: 500Gi
+
+workerMains:
+  resources:
+    ## Resources for the main worker.
+    ## It requires a large memory allocation because an inefficient function
+    ## buffers all the input files of a job are buffered into memory.
+    requests:
+      memory: 40Gi
+      cpu: 4
+    limits:
+      memory: 41Gi
+      cpu: 4
+
+server:
+  ## resources for the HTTP server (WSGI)
+  resources:
+    requests:
+      memory: 20Gi
+      cpu: 4
+    limits:
+      memory: 21Gi
+      cpu: 4
+
+db:
+  volume:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        ## how much storage for the database
+        storage: 10Gi
+
+  ## resources for the database
+  resources:
+    requests:
+      memory: 8Gi
+      cpu: 4
+    limits:
+      memory: 9Gi
+      cpu: 4
+
+config:
+  # smaller values increases responsiveness at the cost of resource usage and possibly concurrency bugs
+  CUBE_CELERY_POLL_INTERVAL: "5.0"
+  # HTTP server security settings
+  DJANGO_ALLOWED_HOSTS: "*"
+  DJANGO_CORS_ALLOW_ALL_ORIGINS: "true"
+  DJANGO_CORS_ALLOWED_ORIGINS: ""
+  DJANGO_SECURE_PROXY_SSL_HEADER: ""
+  DJANGO_USE_X_FORWARDED_HOST: "false"
+  # enable LDAP login
+  AUTH_LDAP: "false"
+
+# GLOBAL SETTINGS
+#################
+
+# storage class to use for persistent volume claims
+storageClassName: ""
+
+# optional security context to apply to all containers
+# securityContext:
+#   runAsUser: 123456
+#   runAsGroup: 789
