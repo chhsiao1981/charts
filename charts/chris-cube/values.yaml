@@ -89,8 +89,8 @@ config:
   # AUTH_LDAP_USER_SEARCH_ROOT: "dc=fnndsc,dc=org"
 
 ## Additional secret environment variables for CUBE
-secrets:
-  AUTH_LDAP_BIND_PASSWORD: "admin1234"
+# secrets:
+#   AUTH_LDAP_BIND_PASSWORD: "admin1234"
 
 
 # Global settings
