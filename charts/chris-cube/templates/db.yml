@@ -33,7 +33,7 @@ spec:
       - name: postgres
         image: docker.io/library/postgres:13
         ports:
-        - name: postgres
+        - name: postgresql
           containerPort: 5432
         env:
         # permissions workaround
@@ -101,6 +101,6 @@ spec:
   selector:
     app.kubernetes.io/instance: {{ .Release.Name }}-db
   ports:
-  - name: postgres
+  - name: postgresql
     port: 5432
     targetPort: 5432
