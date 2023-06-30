@@ -32,7 +32,26 @@ You'll need a Kubernetes (k8s) cluster and a [storage class](https://kubernetes.
 
 On the client, install `helm`: https://helm.sh/docs/intro/install/
 
-### TODO TODO TODO add installation instructions
+Once Helm has been set up correctly, add the repo as follows:
+
+```shell
+helm repo add fnndsc-khris https://fnndsc.github.io/khris-helm
+```
+
+If you had already added this repo earlier, run `helm repo update` to retrieve
+the latest versions of the packages.  You can then run `helm search repo fnndsc-khris` to see the charts.
+
+To install the `chris-cube` chart:
+
+```shell
+helm install my-cube-instance fnndsc-khris/chris-cube
+```
+
+To uninstall the chart:
+
+```shell
+helm delete my-cube-instance
+```
 
 ### NFS Server Workarounds
 

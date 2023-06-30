@@ -1,10 +1,24 @@
+# This file is for cutomizing how chris-cube is deployed.
+
+
+# Ingress
+#####################
+
 ## Use nodePort for ingress
 # nodePort: "32000"
 ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
 # nodePortHost: my_hostname
 
+
+# Image
+#####################
+
 ## version and repo of image for ChRIS backend
 image: ghcr.io/fnndsc/cube:4.0.0.pre12
+
+
+# Resources
+#####################
 
 files:
   accessModes:
@@ -55,6 +69,10 @@ db:
       memory: 9Gi
       cpu: 4
 
+
+# Configuration
+#####################
+
 config:
   # smaller values increases responsiveness at the cost of resource usage and possibly concurrency bugs
   CUBE_CELERY_POLL_INTERVAL: "5.0"
@@ -74,8 +92,9 @@ config:
 secrets:
   AUTH_LDAP_BIND_PASSWORD: "admin1234"
 
-# GLOBAL SETTINGS
-#################
+
+# Global settings
+#####################
 
 # storage class to use for persistent volume claims
 storageClassName: ""
