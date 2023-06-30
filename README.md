@@ -58,9 +58,20 @@ helm delete -n cube my-cube-instance
 ### NFS Server Workarounds
 
 A NFS-based storage class (for instance, using [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner))
-could require that all (stateful) containers run as a user with a specific UID. This can be achieved by specifying a value for `securityContext`, e.g.
+could require that all (stateful) containers run as a user with a specific UID. This can be achieved by specifying a value for `securityContext`.
+
+Currently, the image `docker.io/fnndsc/cube` needs to be rebuilt in order for it to work with a custom UID.
+
+```shell
+docker build -t internal.registry/fnndsc/cube:latest --build-arg UID=123456 https://github.com/FNNDSC/ChRIS_ultron_backEnd.git
+docker push internal.registry/fnndsc/cube:latest
+```
+
+`values.yaml` should have the corresponding values set:
 
 ```yaml
+image: internal.registry/fnndsc/cube:latest
+
 securityContext:
   runAsUser: 123456
   runAsGroup: 789
