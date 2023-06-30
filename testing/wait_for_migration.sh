@@ -23,7 +23,13 @@ function get_state () {
 }
 
 state=$(get_state)
+count=0
 until [ "$state" = 'terminated' ]; do
+  ((count++))
+  if [ "$count" -gt 300 ]; then
+    echo "${ERROR_PREFIX}timed out"
+    exit 1
+  fi
   sleep 1
   printf .
   state=$(get_state)

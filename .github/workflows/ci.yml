@@ -20,14 +20,14 @@ jobs:
           -f testing/ghactions-values.yml --set nodePortHost=$(hostname) .
 
     - name: Wait for migrations to complete
-      run: ./testing/wait_for_migration.sh
+      run: ./testing/wait_for_migration.sh -n ghactions
 
     - name: Connectivity test
-      run: Helm test
+      run: helm test -n ghactions khris-test
     # - name: User test
       # run: ...
 
     - name: Uninstall chart
-      run: helm uninstall khris-test
+      run: helm uninstall -n ghactions khris-test
     - name: Delete cluster
       run: kind delete cluster
