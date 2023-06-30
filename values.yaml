@@ -66,6 +66,13 @@ config:
   DJANGO_USE_X_FORWARDED_HOST: "false"
   # enable LDAP login
   AUTH_LDAP: "false"
+  # AUTH_LDAP_SERVER_URI: "ldap://192.168.0.29:389"
+  # AUTH_LDAP_BIND_DN: "cn=admin,dc=fnndsc,dc=org"
+  # AUTH_LDAP_USER_SEARCH_ROOT: "dc=fnndsc,dc=org"
+
+## Additional secret environment variables for CUBE
+secrets:
+  AUTH_LDAP_BIND_PASSWORD: "admin1234"
 
 # GLOBAL SETTINGS
 #################

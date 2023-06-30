@@ -41,7 +41,7 @@ spec:
         - secretRef:
             name: {{ .Release.Name }}-db-config
         - secretRef:
-            name: {{ .Release.Name }}-django-secret
+            name: {{ .Release.Name }}-cube-secrets
         volumeMounts:
         - mountPath: /var/chris
           name: file-storage
@@ -58,7 +58,7 @@ spec:
         - secretRef:
             name: {{ .Release.Name }}-db-config
         - secretRef:
-            name: {{ .Release.Name }}-django-secret
+            name: {{ .Release.Name }}-cube-secrets
         env:
         - name: DJANGO_COLLECTSTATIC
           value: "on"

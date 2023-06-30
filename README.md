@@ -56,7 +56,8 @@ kind create cluster --config=testing/kind-with-nodeport.yml
 
 ### Initial Secret Generation
 
-See https://github.com/helm/helm-www/issues/1259#issuecomment-641558251
+On the initial installation of `chris-cube`, we need to generate some secrets.
+Ideas on how to do this were taken from here: https://github.com/helm/helm-www/issues/1259
 
 ### Roadmap
 

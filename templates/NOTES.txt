@@ -1,3 +1,4 @@
+{{- if .Release.IsInstall }}
 Please wait a while as CUBE is running database migrations (1-2 minutes).
 When the server comes online, you'll probably want to create a superuser:
 
@@ -13,3 +14,4 @@ Your CUBE API address is:
     http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/
 
 {{- end }}
+{{ end }}
