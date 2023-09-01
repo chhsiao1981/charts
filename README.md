@@ -36,7 +36,7 @@ On the client, install `helm`: https://helm.sh/docs/intro/install/
 Once Helm has been set up correctly, add the repo as follows:
 
 ```shell
-helm repo add fnndsc-khris https://fnndsc.github.io/khris-helm
+helm repo add fnndsc https://fnndsc.github.io/charts
 ```
 
 If you had already added this repo earlier, run `helm repo update` to retrieve
@@ -46,7 +46,7 @@ To install the `chris-cube` chart, download a copy of [values.yaml](./charts/chr
 and modify its values to suit your needs. Then run
 
 ```shell
-helm install -n cube -f my-values.yaml my-cube-instance fnndsc-khris/chris-cube
+helm install -n cube -f my-values.yaml my-cube-instance fnndsc/chris-cube
 ```
 
 To uninstall the chart:
