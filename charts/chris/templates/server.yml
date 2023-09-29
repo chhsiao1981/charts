@@ -31,10 +31,18 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
-        # TODO WAIT FOR DATABASE READY
+        - name: wait-db
+          # N.B. hard-coded image is not necessarily same as the one used by the subchart, but should be OK
+          image: docker.io/bitnami/postgresql:16.0.0-debian-11-r3
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until pg_isready -U postgres -h {{ .Release.Name }}-postgresql -p 5432; do sleep 1; done
         - name: migratedb
           command: ["python", "manage.py", "migrate", "--noinput"]
           {{- include "cube.container" . | nindent 10 }}
+        # N.B. in theory we should check for rabbitmq too but doesn't actually matter since rabbitmq is fast
       containers:
         - name: server
           {{- include "cube.container" . | nindent 10 }}

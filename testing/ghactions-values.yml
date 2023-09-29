@@ -18,14 +18,16 @@ cube:
         limits:
           memory: 256Mi
           cpu: 200m
-    db:
-      resources:
-        requests:
-          memory: 256Mi
-          cpu: 500m
-        limits:
-          memory: 256Mi
-          cpu: 500m
 
   ingress:
     nodePort: "32000"
+
+postgresql:
+  primary:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 500m
+      limits:
+        memory: 256Mi
+        cpu: 500m

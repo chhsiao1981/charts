@@ -32,7 +32,8 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-              # TODO WAIT FOR DATABASE READY
+      initContainers:
+        {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: worker-mains
           command: ["celery", "-A", "core", "worker", "-c", "4", "-l", "info", "-Q", "main1,main2"]

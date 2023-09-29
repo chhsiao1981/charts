@@ -32,17 +32,19 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: celery-beat
           command: ["celery", "-A", "core", "beat", "-l", "info", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
           {{- include "cube.container" . | nindent 10 }}
+          # hard-coded resources because celery beat shouldn't require variable resources
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 200m
+            requests:
+              memory: 128Mi
+              cpu: 200m
 
       {{- include "cube.pod" . | nindent 6 }}
-
-      resources:
-        requests:
-          memory: 128Mi
-          cpu: 200m
-        requests:
-          memory: 128Mi
-          cpu: 200m

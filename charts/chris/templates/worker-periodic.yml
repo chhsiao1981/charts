@@ -32,18 +32,20 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-              # TODO WAIT FOR DATABASE READY
+      initContainers:
+        {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: worker-periodic
           command: ["celery", "-A", "core", "worker", "-c", "2", "-l", "info", "-Q", "periodic"]
           {{- include "cube.container" . | nindent 10 }}
+          # hard-coded resources because periodic worker shouldn't require variable resources
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 200m
+            requests:
+              memory: 128Mi
+              cpu: 200m
 
       {{- include "cube.pod" . | nindent 6 }}
 
-      resources:
-        requests:
-          memory: 128Mi
-          cpu: 200m
-        requests:
-          memory: 128Mi
-          cpu: 200m

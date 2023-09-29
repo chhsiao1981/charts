@@ -92,3 +92,12 @@ securityContext:
   {{- toYaml .Values.global.securityContext | nindent 2 }}
 {{- end }}
 {{- end }}
+
+# Since the server deployment is the one which defines the database migrations, everything else
+# should start after the server. It's ok for ancillary services to be started late.
+{{- define "cube.waitServerReady" -}}
+- name: wait-for-server
+  image: busybox
+  command: ["/bin/sh", "-c"]
+  args: ["until wget 'http://{{ .Release.Name }}-server:8000/api/v1/users/'; do sleep 5; done"]
+{{- end }}
