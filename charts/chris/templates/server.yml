@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chris.fullname" . }}-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "chris.name" . }}-server
+    app.kubernetes.io/instance: {{ .Release.Name }}-server
+    {{- include "cube.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "ChRIS backend server"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "chris.name" . }}-server
+      app.kubernetes.io/instance: {{ .Release.Name }}-server
+  template:
+    metadata:
+      name: {{ .Release.Name }}-server
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "chris.name" . }}-server
+        app.kubernetes.io/instance: {{ .Release.Name }}-server
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      initContainers:
+        # TODO WAIT FOR DATABASE READY
+        - name: migratedb
+          image: {{ include "cube.image" . }}
+          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-cube-config
+            - secretRef:
+                name: {{ .Release.Name }}-db-config
+            - secretRef:
+                name: {{ .Release.Name }}-cube-secrets
+          volumeMounts:
+            - mountPath: /data
+              name: file-storage
+
+      containers:
+        - name: server
+          image: {{ include "cube.image" . }}
+          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-cube-config
+            - secretRef:
+                name: {{ .Release.Name }}-db-config
+            - secretRef:
+                name: {{ .Release.Name }}-cube-secrets
+          volumeMounts:
+            - mountPath: /data
+              name: file-storage
+          resources:
+            {{- toYaml .Values.cube.resources.server.resources | nindent 12 }}
+
+      volumes:
+        - name: file-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-cube-files
+
+      {{- if .Values.global.securityContext }}
+      securityContext:
+        {{- toYaml .Values.global.securityContext | nindent 8 }}
+      {{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "chris.name" . }}-server
+    app.kubernetes.io/instance: {{ .Release.Name }}-server
+    {{- include "cube.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "chris.name" . }}-server
+    app.kubernetes.io/instance: {{ .Release.Name }}-server
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000

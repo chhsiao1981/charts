@@ -1,3 +1,5 @@
+# TODO https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+
 apiVersion: apps/v1
 
 kind: Deployment
@@ -7,7 +9,7 @@ metadata:
   labels:
     app.kubernetes.io/name: postgres
     app.kubernetes.io/instance: {{ .Release.Name }}-db
-    app.kubernetes.io/version: "13"
+    app.kubernetes.io/version: "16"
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: {{ .Release.Name }}
     app.kubernetes.io/managed-by: helm
@@ -24,14 +26,14 @@ spec:
       labels:
         app.kubernetes.io/name: postgres
         app.kubernetes.io/instance: {{ .Release.Name }}-db
-        app.kubernetes.io/version: "13"
+        app.kubernetes.io/version: "16"
         app.kubernetes.io/component: database
         app.kubernetes.io/part-of: {{ .Release.Name }}
         app.kubernetes.io/managed-by: helm
     spec:
       containers:
       - name: postgres
-        image: docker.io/library/postgres:13
+        image: docker.io/library/postgres:16
         ports:
         - name: postgresql
           containerPort: 5432
@@ -47,15 +49,15 @@ spec:
         - name: data
           mountPath: /var/lib/postgresql/data
         resources:
-          {{- toYaml .Values.db.resources | nindent 10 }}
+          {{- toYaml .Values.cube.resources.db.resources | nindent 10 }}
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-db-data
 
-      {{- if .Values.securityContext }}
+      {{- if .Values.global.securityContext }}
       securityContext:
-        {{- toYaml .Values.securityContext | nindent 8 }}
+        {{- toYaml .Values.global.securityContext | nindent 8 }}
       {{- end }}
 
 ---
@@ -68,7 +70,7 @@ metadata:
   labels:
     app.kubernetes.io/name: postgres-data
     app.kubernetes.io/instance: {{ .Release.Name }}-db-data
-    app.kubernetes.io/version: "13"
+    app.kubernetes.io/version: "16"
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: {{ .Release.Name }}
     app.kubernetes.io/managed-by: helm
@@ -77,10 +79,10 @@ spec:
   storageClassName: {{ .Values.storageClassName }}
   {{- end }}
   accessModes:
-  {{- toYaml .Values.db.volume.accessModes | nindent 4 }}
+  - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.db.volume.resources.requests.storage }}
+      storage: 1Gi
 
 ---
 
@@ -92,7 +94,7 @@ metadata:
   labels:
     app.kubernetes.io/name: postgres-service
     app.kubernetes.io/instance: {{ .Release.Name }}-postgres-service
-    app.kubernetes.io/version: "13"
+    app.kubernetes.io/version: "16"
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: {{ .Release.Name }}
     app.kubernetes.io/managed-by: helm

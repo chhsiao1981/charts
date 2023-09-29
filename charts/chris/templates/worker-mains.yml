@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+
+kind: Deployment
+metadata:
+  name: {{ include "chris.fullname" . }}-worker-mains
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
+    app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
+    {{- include "cube.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "ChRIS backend periodic tasks"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
+      app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
+  template:
+    metadata:
+      name: {{ .Release.Name }}-worker-mains
+      namespace: {{ .Release.Namespace }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
+        app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+              # TODO WAIT FOR DATABASE READY
+      containers:
+        - name: worker-mains
+          image: {{ include "cube.image" . }}
+          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+          command: ["celery", "-A", "core", "worker", "-c", "4", "-l", "info", "-Q", "main1,main2"]
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-cube-config
+            - secretRef:
+                name: {{ .Release.Name }}-db-config
+            - secretRef:
+                name: {{ .Release.Name }}-cube-secrets
+          volumeMounts:
+            - mountPath: /data
+              name: file-storage
+
+      volumes:
+        - name: file-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-cube-files
+
+      {{- if .Values.global.securityContext }}
+      securityContext:
+        {{- toYaml .Values.global.securityContext | nindent 8 }}
+      {{- end }}

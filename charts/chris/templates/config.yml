@@ -6,18 +6,17 @@ metadata:
   name: {{ .Release.Name }}-cube-config
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/part-of: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: helm
+    {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "Configuration of ChRIS backend"
 data:
-  {{- toYaml .Values.config | nindent 2 }}
+  {{- toYaml .Values.cube.config | nindent 2 }}
 
   DJANGO_SETTINGS_MODULE: "config.settings.production"
   STATIC_ROOT: "/home/localuser/mod_wsgi-0.0.0.0:8000/htdocs/static/"
   CHRIS_STORE_URL: "https://chrisstore.co/api/v1/"
-  DEFAULT_FILE_STORAGE: "django.core.files.storage.FileSystemStorage"
-  MEDIA_ROOT: "/var/chris"
+  STORAGE_ENV: "filesystem"
+  MEDIA_ROOT: "/data"
 
   DATABASE_HOST: "{{ .Release.Name }}-db"
   DATABASE_PORT: "5432"
@@ -32,8 +31,7 @@ metadata:
   name: {{ .Release.Name }}-cube-secrets
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/part-of: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: helm
+    {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-SECRET_KEY"
 data:
@@ -42,8 +40,8 @@ data:
   {{- else }}
   DJANGO_SECRET_KEY: {{ randAlphaNum 32 | b64enc }}
   {{- end }}
-  {{- if .Values.secrets }}
-  {{- range $key, $secret := .Values.secrets }}
+  {{- if .Values.cube.secrets }}
+  {{- range $key, $secret := .Values.cube.secrets }}
   {{ $key }}: {{ $secret | b64enc | quote }}
   {{- end }}
   {{- end }}
@@ -57,8 +55,7 @@ metadata:
   name: {{ .Release.Name }}-db-config
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/part-of: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: helm
+    {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "Configuration of a PostgresSQL database used by the ChRIS backend"
 data:

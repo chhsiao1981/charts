@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-cube-files
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cube.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.global.storageClassName }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
+  accessModes:
+  {{- toYaml .Values.cube.resources.files.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.cube.resources.files.resources.requests.storage }}

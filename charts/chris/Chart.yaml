@@ -1,8 +1,8 @@
 # documentation: https://helm.sh/docs/topics/charts/
 
 apiVersion: v2
-name: chris-cube
-description: CUBE is an open-source platform backend for medical compute.
+name: chris
+description: ChRIS is an open-source platform backend for medical compute.
 home: https://chrisproject.org
 sources:
 - https://github.com/FNNDSC/charts
@@ -17,8 +17,8 @@ keywords:
 icon: ./logo_chris.png
 
 type: application
-version: "1.0.2"
-appVersion: "4.0.0.pre12"
+version: "1.0.0"
+appVersion: "5.0.0"
 
 maintainers:
 - name: The FNNDSC Dev Team

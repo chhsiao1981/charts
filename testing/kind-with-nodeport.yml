@@ -7,7 +7,41 @@ nodes:
     hostPort: 32000
     listenAddress: "0.0.0.0"
     protocol: tcp
-
-- role: worker
+  - containerPort: 32001
+    hostPort: 32001
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32002
+    hostPort: 32002
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32003
+    hostPort: 32003
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32004
+    hostPort: 32004
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32005
+    hostPort: 32005
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32006
+    hostPort: 32006
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32007
+    hostPort: 32007
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32008
+    hostPort: 32008
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+  - containerPort: 32009
+    hostPort: 32009
+    listenAddress: "0.0.0.0"
+    protocol: tcp
 - role: worker
 - role: worker

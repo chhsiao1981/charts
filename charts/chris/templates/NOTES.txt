@@ -11,7 +11,7 @@ https://github.com/FNNDSC/chrisomatic
 {{ if (and .Values.nodePort .Values.nodePortHost) }}
 Your CUBE API address is:
 
-    http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/
+    http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/
 
 {{- end }}
 {{ end }}
