@@ -30,53 +30,21 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
       initContainers:
         # TODO WAIT FOR DATABASE READY
         - name: migratedb
-          image: {{ include "cube.image" . }}
-          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
           command: ["python", "manage.py", "migrate", "--noinput"]
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-cube-config
-            - secretRef:
-                name: {{ .Release.Name }}-db-config
-            - secretRef:
-                name: {{ .Release.Name }}-cube-secrets
-          volumeMounts:
-            - mountPath: /data
-              name: file-storage
-
+          {{- include "cube.container" . | nindent 10 }}
       containers:
         - name: server
-          image: {{ include "cube.image" . }}
-          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+          {{- include "cube.container" . | nindent 10 }}
           ports:
             - name: http
               containerPort: 8000
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-cube-config
-            - secretRef:
-                name: {{ .Release.Name }}-db-config
-            - secretRef:
-                name: {{ .Release.Name }}-cube-secrets
-          volumeMounts:
-            - mountPath: /data
-              name: file-storage
           resources:
             {{- toYaml .Values.cube.resources.server.resources | nindent 12 }}
 
-      volumes:
-        - name: file-storage
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-cube-files
-
-      {{- if .Values.global.securityContext }}
-      securityContext:
-        {{- toYaml .Values.global.securityContext | nindent 8 }}
-      {{- end }}
+      {{- include "cube.pod" . | nindent 6 }}
 
 ---
 

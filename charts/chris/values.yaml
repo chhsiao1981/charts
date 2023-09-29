@@ -17,7 +17,7 @@ imagePullSecrets: []
 
 global:
   # storage class to use for persistent volume claims
-  storageClassName: ""
+  storageClass: ""
 
   # optional security context to apply to all containers
   # securityContext:
@@ -47,13 +47,6 @@ cube:
 
   podAnnotations: {}
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
 
 
   # Configuration
@@ -116,24 +109,28 @@ cube:
           memory: 512Mi
           cpu: 1
         limits:
-          memory: 1Gi  # TODO test whether this is enough
+          memory: 1Gi
           cpu: 1
 
-    db:
-      volume:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            ## how much storage for the database
-            storage: 10Gi
+# Database
+#####################
 
-      ## resources for the database
-      resources:
-        requests:
-          memory: 8Gi
-          cpu: 4
-        limits:
-          memory: 9Gi
-          cpu: 4
+# [SUBCHART] PostgreSQL packaged by Bitnami
+# https://github.com/bitnami/charts/tree/main/bitnami/postgresql#parameters
+postgresql:
 
+  # one of: [standalone, replication]
+  # Replication is supported, see upstream README.md for configuration.
+  architecture: standalone
+
+  primary:
+    # Primary database instance resource requests
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 1
+
+  # no reason to change these values
+  auth:
+    database: chris
+    username: chris

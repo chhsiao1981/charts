@@ -5,8 +5,8 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
-    name: Test
+  test-cube:
+    name: Test CUBE
     runs-on: ubuntu-22.04
 
     steps:
@@ -14,10 +14,12 @@ jobs:
       uses: actions/checkout@v3
     - name: Start Kubernetes
       run: kind create cluster --config=testing/kind-with-nodeport.yml
-    - name: Install chris-cube
+    - name: Update Helm dependencies
+      run: helm dependency update ./charts/chris
+    - name: Install chris
       run: |
         helm install --create-namespace --namespace ghactions khris-test \
-          -f testing/ghactions-values.yml --set nodePortHost=$(hostname) ./charts/chris-cube
+          -f testing/ghactions-values.yml --set nodePortHost=$(hostname) ./charts/chris
 
     - name: Wait for migrations to complete
       run: ./testing/wait_for_migration.sh -n ghactions
@@ -34,7 +36,7 @@ jobs:
   
   # https://helm.sh/docs/howto/chart_releaser_action/
   release:
-    needs: [ test ]
+    needs: [ test-cube ]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout

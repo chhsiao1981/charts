@@ -35,26 +35,15 @@ spec:
               # TODO WAIT FOR DATABASE READY
       containers:
         - name: worker-periodic
-          image: {{ include "cube.image" . }}
-          imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
           command: ["celery", "-A", "core", "worker", "-c", "2", "-l", "info", "-Q", "periodic"]
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-cube-config
-            - secretRef:
-                name: {{ .Release.Name }}-db-config
-            - secretRef:
-                name: {{ .Release.Name }}-cube-secrets
-          volumeMounts:
-            - mountPath: /data
-              name: file-storage
+          {{- include "cube.container" . | nindent 10 }}
 
-      volumes:
-        - name: file-storage
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-cube-files
+      {{- include "cube.pod" . | nindent 6 }}
 
-      {{- if .Values.global.securityContext }}
-      securityContext:
-        {{- toYaml .Values.global.securityContext | nindent 8 }}
-      {{- end }}
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 200m
+        requests:
+          memory: 128Mi
+          cpu: 200m

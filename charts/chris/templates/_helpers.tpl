@@ -57,9 +57,38 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-CUBE container image
+CUBE container common properties
 --------------------------------------------------------------------------------
 */}}
-{{- define "cube.image" -}}
-"{{ .Values.cube.image.repository }}:{{ .Values.cube.image.tag | default .Chart.AppVersion }}"
+{{- define "cube.container" -}}
+image: "{{ .Values.cube.image.repository }}:{{ .Values.cube.image.tag | default .Chart.AppVersion }}"
+imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+env:
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Release.Name }}-postgresql
+      key: password
+envFrom:
+- configMapRef:
+    name: {{ .Release.Name }}-cube-config
+- configMapRef:
+    name: {{ .Release.Name }}-db-config
+- secretRef:
+    name: {{ .Release.Name }}-cube-secrets
+volumeMounts:
+  - mountPath: /data
+    name: file-storage
+{{- end }}
+
+
+{{- define "cube.pod" -}}
+volumes:
+  - name: file-storage
+    persistentVolumeClaim:
+      claimName: {{ .Release.Name }}-cube-files
+{{- if .Values.global.securityContext }}
+securityContext:
+  {{- toYaml .Values.global.securityContext | nindent 2 }}
+{{- end }}
 {{- end }}

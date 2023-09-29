@@ -13,13 +13,9 @@ data:
   {{- toYaml .Values.cube.config | nindent 2 }}
 
   DJANGO_SETTINGS_MODULE: "config.settings.production"
-  STATIC_ROOT: "/home/localuser/mod_wsgi-0.0.0.0:8000/htdocs/static/"
-  CHRIS_STORE_URL: "https://chrisstore.co/api/v1/"
+  CHRIS_STORE_URL: "https://cube.chrisproject.org/api/v1/"
   STORAGE_ENV: "filesystem"
   MEDIA_ROOT: "/data"
-
-  DATABASE_HOST: "{{ .Release.Name }}-db"
-  DATABASE_PORT: "5432"
   CELERY_BROKER_URL: "amqp://{{ .Release.Name }}-rabbitmq:5672"
 
 ---
@@ -45,24 +41,3 @@ data:
   {{ $key }}: {{ $secret | b64enc | quote }}
   {{- end }}
   {{- end }}
-
----
-
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: {{ .Release.Name }}-db-config
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "cube.labels" . | nindent 4 }}
-  annotations:
-    kubernetes.io/description: "Configuration of a PostgresSQL database used by the ChRIS backend"
-data:
-  POSTGRES_DB: {{ "chris" | b64enc | quote }}
-  POSTGRES_USER: {{ "chris" | b64enc | quote }}
-  {{with (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-db-config"))}}
-  POSTGRES_PASSWORD:  {{ index .data "POSTGRES_PASSWORD" }}
-  {{ else }}
-  POSTGRES_PASSWORD: {{ randAlphaNum 32 | b64enc }}
-  {{ end }}

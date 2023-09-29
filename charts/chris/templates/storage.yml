@@ -6,8 +6,8 @@ metadata:
   labels:
     {{- include "cube.labels" . | nindent 4 }}
 spec:
-  {{- if .Values.global.storageClassName }}
-  storageClassName: {{ .Values.global.storageClassName }}
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
   accessModes:
   {{- toYaml .Values.cube.resources.files.accessModes | nindent 4 }}
