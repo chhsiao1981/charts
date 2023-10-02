@@ -51,7 +51,7 @@ jobs:
       run: |
         kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-server
         kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-server --timeout=30s
-        most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-server -o name)
+        most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-server -o custom-columns=:metadata.name | tail -n 1)
         echo "new_pod=$most_recent_pod" >> "$GITHUB_OUTPUT"
     - name: Wait for migrations to complete again
       run: ./testing/wait_for_migration.sh -n ghactions
