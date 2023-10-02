@@ -30,7 +30,7 @@ jobs:
         actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-server -c create-superuser)"
         expected='Created superuser "khris"'
         if [ "$actual" != "$expected" ]; then
-          echo "::error ::Expected: $expected\nActual: $actual"
+          echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
     - name: Connectivity test
@@ -50,7 +50,7 @@ jobs:
         actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-server -c create-superuser)"
         expected='Updated password for user "khris"'
         if [ "$actual" != "$expected" ]; then
-          echo "::error ::Expected: $expected\nActual: $actual"
+          echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
 
