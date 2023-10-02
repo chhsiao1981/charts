@@ -42,6 +42,46 @@ spec:
         - name: migratedb
           command: ["python", "manage.py", "migrate", "--noinput"]
           {{- include "cube.container" . | nindent 10 }}
+        - name: create-superuser
+          command:
+          - python
+          - manage.py
+          - shell
+          - -c
+          - |
+            import os
+            from django.contrib.auth.models import User
+
+            user_config = {
+                'username': os.environ['CHRIS_SUPERUSER_USERNAME'],
+                'password': os.environ['CHRIS_SUPERUSER_PASSWORD'],
+                'email': os.environ['CHRIS_SUPERUSER_EMAIL']
+            }
+
+            if (existing_user := User.objects.filter(username=user_config['username']).first()) is not None:
+                existing_user.set_password(user_config['password'])
+                existing_user.save()
+                print(f'Updated password for user "{existing_user.username}"')
+            else:
+                created_user = User.objects.create_superuser(**user_config)
+                print(f'Created superuser "{created_user.username}"')
+          {{- include "cube.container" . | nindent 10 }}
+            - name: CHRIS_SUPERUSER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-chris-superuser
+                  key: username
+            - name: CHRIS_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-chris-superuser
+                  key: password
+            - name: CHRIS_SUPERUSER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-chris-superuser
+                  key: email
+
         # N.B. in theory we should check for rabbitmq too but doesn't actually matter since rabbitmq is fast
       containers:
         - name: server

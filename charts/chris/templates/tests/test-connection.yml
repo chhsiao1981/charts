@@ -1,4 +1,4 @@
-{{- if (and .Values.nodePort .Values.nodePortHost ) }}
+{{- if (and .Values.cube.ingress.nodePort .Values.cube.ingress.nodePortHost ) }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -13,6 +13,6 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/']
+      args: ['http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/api/v1/users/']
   restartPolicy: Never
 {{- end }}

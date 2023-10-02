@@ -8,7 +8,8 @@ SELECTOR='app.kubernetes.io/name=chris-server'
 # server.yml defines two initContainers:
 # 0 :  wait for database to be ready
 # 1 :  run database migrations
-INIT_CONTAINER_INDEX=1
+# 2 :  create superuser
+LAST_INITCONTAINER=2
 
 while getopts ":n:" opt; do
   case $opt in
@@ -25,7 +26,7 @@ fi
 # get the state of the initContainer at index 1
 function get_state () {
   kubectl get pod $namespace -l "$SELECTOR" --template \
-    "{{ with (index .items 0).status.initContainerStatuses }}{{ range \$k, \$v := (index . $INIT_CONTAINER_INDEX).state }}{{\$k}}{{end}}{{else}}empty{{end}}"
+    "{{ with (index .items 0).status.initContainerStatuses }}{{ range \$k, \$v := (index . $LAST_INITCONTAINER).state }}{{\$k}}{{end}}{{else}}empty{{end}}"
 }
 
 state=$(get_state)
@@ -47,12 +48,12 @@ echo
 
 reason=$(
   kubectl get pod $namespace -l "$SELECTOR" --template \
-    "{{ (index (index .items 0).status.initContainerStatuses $INIT_CONTAINER_INDEX).state.terminated.reason }}"
+    "{{ (index (index .items 0).status.initContainerStatuses $LAST_INITCONTAINER).state.terminated.reason }}"
 )
 if [ "$reason" != 'Completed' ]; then
   echo "${ERROR_PREFIX}expected initContainer to be terminated with reason 'Completed', is instead '$reason'"
   set -ex
   kubectl get pod $namespace -l "$SELECTOR" --template \
-    "{{ (index (index .items 0).status.initContainerStatuses $INIT_CONTAINER_INDEX).state }}"
+    "{{ (index (index .items 0).status.initContainerStatuses $LAST_INITCONTAINER).state }}"
   exit 1
 fi

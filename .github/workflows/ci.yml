@@ -3,6 +3,7 @@ name: ci
 on:
   push:
     branches: [ master ]
+  pull_request:
 
 jobs:
   test-cube:
@@ -18,19 +19,45 @@ jobs:
       run: helm dependency update ./charts/chris
     - name: Install chris
       run: |
-        helm install --create-namespace --namespace ghactions khris-test \
-          -f testing/ghactions-values.yml --set nodePortHost=$(hostname) ./charts/chris
+        helm install --create-namespace -n ghactions khris-test ./charts/chris \
+          -f testing/ghactions-values.yml --set nodePortHost=$(hostname)
 
     - name: Wait for migrations to complete
       run: ./testing/wait_for_migration.sh -n ghactions
 
+    - name: Assert superuser created
+      run: |
+        actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-server -c create-superuser)"
+        expected='Created superuser "khris"'
+        if [ "$actual" != "$expected" ]; then
+          echo "::error ::Expected: $expected\nActual: $actual"
+          exit 1
+        fi
     - name: Connectivity test
       run: helm test -n ghactions khris-test
-    # - name: User test
-      # run: ...
+
+    - name: Run upgrade and set new admin password
+      run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
+    - name: Restart server
+      run: |
+        kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-server
+        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-server --timeout=30s
+    - name: Wait for migrations to complete again
+      run: ./testing/wait_for_migration.sh -n ghactions
+
+    - name: Assert superuser password changed
+      run: |
+        actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-server -c create-superuser)"
+        expected='Updated password for user "khris"'
+        if [ "$actual" != "$expected" ]; then
+          echo "::error ::Expected: $expected\nActual: $actual"
+          exit 1
+        fi
 
     - name: Uninstall chart
       run: helm uninstall -n ghactions khris-test
+    - name: Delete namespace
+      run: kubectl delete namespace ghactions
     - name: Delete cluster
       run: kind delete cluster
   

@@ -28,13 +28,22 @@ global:
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+
+# ChRIS automatic admin account
+#####################
+
+chris_admin:
+  username: khris
+  email: noreply@babyMRI.org
+  # If no password is set, then a random password is created for you.
+  # password:
 
 # ChRIS Backend
 #####################
@@ -72,11 +81,11 @@ cube:
 
   # Ingress
   #####################
-  ingress:
+  ingress: {}
     ## Use nodePort for ingress
-    nodePort: "32000"
+    # nodePort: "32000"
     ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
-    nodePortHost: my_hostname
+    # nodePortHost: my_hostname
 
   # Resources
   #####################

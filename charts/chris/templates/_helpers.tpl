@@ -60,25 +60,28 @@ Create the name of the service account to use
 CUBE container common properties
 --------------------------------------------------------------------------------
 */}}
+
 {{- define "cube.container" -}}
 image: "{{ .Values.cube.image.repository }}:{{ .Values.cube.image.tag | default .Chart.AppVersion }}"
 imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
-env:
-- name: POSTGRES_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Release.Name }}-postgresql
-      key: password
-envFrom:
-- configMapRef:
-    name: {{ .Release.Name }}-cube-config
-- configMapRef:
-    name: {{ .Release.Name }}-db-config
-- secretRef:
-    name: {{ .Release.Name }}-cube-secrets
 volumeMounts:
   - mountPath: /data
     name: file-storage
+envFrom:
+  - configMapRef:
+      name: {{ .Release.Name }}-cube-config
+  - configMapRef:
+      name: {{ .Release.Name }}-db-config
+  - secretRef:
+      name: {{ .Release.Name }}-cube-secrets
+
+env:
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: {{ .Release.Name }}-postgresql
+        key: password
+{{/* N.B.: env comes last in this helper, so that more values can be appended to it */}}
 {{- end }}
 
 

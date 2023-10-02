@@ -4,12 +4,9 @@
 [![MIT License](https://img.shields.io/github/license/fnndsc/charts)](https://github.com/FNNDSC/charts/blob/main/LICENSE)
 [![ci](https://github.com/FNNDSC/charts/actions/workflows/ci.yml/badge.svg)](https://github.com/FNNDSC/charts/actions/workflows/ci.yml)
 
-Production deployment of [_ChRIS_](https://chrisproject.org/) on [_Kubernetes_](https://kubernetes.io/)
-using [Helm](https://helm.sh/).
-
-_ChRIS_ is an open-source platform for medical compute. Learn more at https://chrisproject.org
-
-Documentation: https://chrisproject.org/docs/deployment
+Helm charts for the [FNNDSC](https://fnndsc.org) and the [_ChRIS_ Project](https://chrisproject.org).
+_ChRIS_ is an open-source platform for medical compute.
+The most important chart of this repository is [chris](./charts/chris), see its [README](./charts/chris/README.md) for more information.
 
 ## Development
 
@@ -20,12 +17,14 @@ If you already have Docker installed, the easiest way to obtain k8s is [KinD](ht
 kind create cluster --config=testing/kind-with-nodeport.yml
 ```
 
-### Initial Secret Generation
+Download dependent subcharts:
 
-On the initial installation of `chris-cube`, we need to generate some secrets.
-Ideas on how to do this were taken from here: https://github.com/helm/helm-www/issues/1259
+```shell
+for dir in ./charts/*/; do helm dependency update "$dir"; done
+```
 
-### Choices and Limitations
+The kind configuration file exposes a bunch of NodePorts, so you can use them for communicating with the cluster. For example, you can run
 
-- Currently, only filesystem storage is supported. Object storage is not supported.
-- We chose bitnami/postgresql for the database. See also: [bitnami/postgresql-ha](https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha), [Crunchy PGO](https://github.com/CrunchyData/postgres-operator)
+```shell
+helm install --create-namespace -n kk --set cube.ingress.nodePortHost=$(hostname) --set cube.ingress.nodePort=32000 cacao ./charts/chris
+```
