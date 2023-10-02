@@ -16,7 +16,6 @@ data:
   CHRIS_STORE_URL: "https://cube.chrisproject.org/api/v1/"
   STORAGE_ENV: "filesystem"
   MEDIA_ROOT: "/data"
-  CELERY_BROKER_URL: "amqp://{{ .Release.Name }}-rabbitmq:5672"
 
 ---
 
@@ -30,11 +29,13 @@ metadata:
     {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-SECRET_KEY"
+stringData:
+  CELERY_BROKER_URL: "amqp://{{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }}@{{ .Release.Name }}-rabbitmq:5672"
 data:
   {{- with (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-cube-secrets"))}}
   DJANGO_SECRET_KEY:  {{ index .data "DJANGO_SECRET_KEY" }}
   {{- else }}
-  DJANGO_SECRET_KEY: {{ randAlphaNum 32 | b64enc }}
+  DJANGO_SECRET_KEY: {{ randAlphaNum 32 | b64enc | quote }}
   {{- end }}
   {{- if .Values.cube.secrets }}
   {{- range $key, $secret := .Values.cube.secrets }}

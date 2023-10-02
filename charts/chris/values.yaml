@@ -132,5 +132,19 @@ postgresql:
 
   # no reason to change these values
   auth:
-    database: chris
-    username: chris
+    database: "chris"
+    username: "chris"
+
+# [SUBCHART] RabbitMQ packaged by Bitnami
+# https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq#parameters
+rabbitmq:
+
+  # No reason to change these values.
+  #
+  # Whether or not to set a password for RabbitMQ depends on your threat model.
+  # The RabbitMQ service does not receive ingress traffic, the password appears
+  # here in values.yaml due to limitations of how Helm charts share variables
+  # with subcharts.
+  auth:
+    username: "chris"
+    password: "chris1234"
