@@ -17,4 +17,4 @@ Here is a one-liner for you to check that everything is up and running:
 
     curl -i --fail-with-body -u "{{ .Values.chris_admin.username }}:$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)" http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/chris-admin/api/v1/
 
-{{- end }}
+{{ end }}
