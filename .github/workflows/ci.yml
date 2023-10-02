@@ -38,16 +38,26 @@ jobs:
 
     - name: Run upgrade and set new admin password
       run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
+    - name: Assert secret was changed
+      run: |
+        actual="$(kubectl get secret -n ghactions khris-test-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)"
+        expected="newpassword1234"
+        if [ "$actual" != "$expected" ]; then
+          echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
+          exit 1
+        fi
     - name: Restart server
+      id: restart
       run: |
         kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-server
         kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-server --timeout=30s
+        most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-server -o name)
+        echo "new_pod=$most_recent_pod" >> "$GITHUB_OUTPUT"
     - name: Wait for migrations to complete again
       run: ./testing/wait_for_migration.sh -n ghactions
-
     - name: Assert superuser password changed
       run: |
-        actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-server -c create-superuser)"
+        actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.most_recent_pod }} -c create-superuser)"
         expected='Updated password for user "khris"'
         if [ "$actual" != "$expected" ]; then
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
