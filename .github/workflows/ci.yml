@@ -57,7 +57,7 @@ jobs:
       run: ./testing/wait_for_migration.sh -n ghactions
     - name: Assert superuser password changed
       run: |
-        actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.most_recent_pod }} -c create-superuser)"
+        actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.new_pod }} -c create-superuser)"
         expected='Updated password for user "khris"'
         if [ "$actual" != "$expected" ]; then
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
