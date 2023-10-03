@@ -11,14 +11,24 @@ Documentation: https://chrisproject.org/docs/deployment
 
 ## Architecture
 
-The [_ChRIS_ backend](https://github.com/FNNDSC/ChRIS_ultron_backEnd) is a Python Django application. It depends on a Postgres database, RabbitMQ, and several ancillary services (celery workers).
+The [_ChRIS_ backend](https://github.com/FNNDSC/ChRIS_ultron_backEnd) is a Python Django application.
+It depends on a Postgres database, RabbitMQ, and several ancillary services (celery workers).
 Postgres and RabbitMQ are created via subcharts packaged by Bitnami. The ancillary services are defined as Deployments.
 
-The most important service is defined in `templates/server.yml`. This is the gunicorn web server which serves the HTTP API.
-`templates/server.yml` defines `initContainers` to wait for the database to be ready and then run database migrations.
-It also does some provisioning tasks such as [creating an admin user](#admin-user-creation).
-The ancillary services also depend on the database migrations to be complete, so they all use `initContainers` which wait
-for the server to be ready.
+### `heart.yml`
+
+The most important resources are defined in `templates/heart.yml`, which includes:
+
+- The [celery beat](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html) scheduler
+- A `gunicorn` web server for the HTTP API, referred to in code and documentation as the "private server"
+- initContainers to wait for the database to be ready, run database migrations, and "provisioning" steps such as creating [creating an admin user](#admin-user-creation)
+
+Every _ChRIS_ backend service depends on the conditions of the initContainers defined in `heart.yml`,
+hence the "private server" is used to notify other deployments that they are ready to start.
+
+The celery beat process, database migrations, and provisioning _must not_ be replicated. Hence, `replicas: 1` is set.
+This is the difference between the "private server" and the other `gunicorn` deployment defined in `templates/server.yml`.
+The (not private) "server" from `templates/server.yml` is "scalable" and intended for ingress.
 
 ## Notes on Development
 

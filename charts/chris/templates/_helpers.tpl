@@ -102,5 +102,5 @@ securityContext:
 - name: wait-for-server
   image: busybox
   command: ["/bin/sh", "-c"]
-  args: ["until wget 'http://{{ .Release.Name }}-server:8000/api/v1/users/'; do sleep 5; done"]
+  args: ["until wget 'http://{{ .Release.Name }}-heart:8000/api/v1/users/'; do sleep 5; done"]
 {{- end }}
