@@ -28,13 +28,22 @@ global:
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+
+# ChRIS automatic admin account
+#####################
+
+chris_admin:
+  username: khris
+  email: noreply@babyMRI.org
+  # If no password is set, then a random password is created for you.
+  # password:
 
 # ChRIS Backend
 #####################
@@ -55,7 +64,7 @@ cube:
     # smaller values increases responsiveness at the cost of resource usage and possibly concurrency bugs
     CUBE_CELERY_POLL_INTERVAL: "5.0"
     # HTTP server security settings
-    DJANGO_ALLOWED_HOSTS: "*"  # IMPORTANT! You must allow "{{ .Release.Name }}-server:8000"
+    DJANGO_ALLOWED_HOSTS: "*"  # IMPORTANT! You must allow "{{ .Release.Name }}-heart:8000"
     DJANGO_CORS_ALLOW_ALL_ORIGINS: "true"
     DJANGO_CORS_ALLOWED_ORIGINS: ""
     DJANGO_SECURE_PROXY_SSL_HEADER: ""
@@ -72,11 +81,11 @@ cube:
 
   # Ingress
   #####################
-  ingress:
+  ingress: {}
     ## Use nodePort for ingress
-    nodePort: "32000"
+    # nodePort: "32000"
     ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
-    nodePortHost: my_hostname
+    # nodePortHost: my_hostname
 
   # Resources
   #####################
@@ -132,5 +141,19 @@ postgresql:
 
   # no reason to change these values
   auth:
-    database: chris
-    username: chris
+    database: "chris"
+    username: "chris"
+
+# [SUBCHART] RabbitMQ packaged by Bitnami
+# https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq#parameters
+rabbitmq:
+
+  # No reason to change these values.
+  #
+  # Whether or not to set a password for RabbitMQ depends on your threat model.
+  # The RabbitMQ service does not receive ingress traffic, the password appears
+  # here in values.yaml due to limitations of how Helm charts share variables
+  # with subcharts.
+  auth:
+    username: "chris"
+    password: "chris1234"

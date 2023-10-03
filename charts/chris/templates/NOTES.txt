@@ -1,17 +1,19 @@
-{{- if .Release.IsInstall }}
-Please wait a while as CUBE is running database migrations (1-2 minutes).
-When the server comes online, you'll probably want to create a superuser:
+The ChRIS backend is being deployed. Please wait for it to be ready.
+You can run this command to block while the server is starting up:
 
-    kubectl exec -it{{with .Release.Namespace}} -n {{.}}{{end}} $(kubectl get pods{{with .Release.Namespace}} -n {{.}}{{end}} -l 'app.kubernetes.io/instance={{ .Release.Name }}-server' -o name) -- python manage.py createsuperuser
+    kubectl wait --for=condition=ready pod -n {{ .Release.Namespace }} -l app.kubernetes.io/name=chris-heart --timeout=300s
 
-After a superuser has been created, upload some plugins and then you're off to the races!
-Initial setup of CUBE past superuser creation can be automated using chrisomatic.
-https://github.com/FNNDSC/chrisomatic
+After that, try logging in as the admin user. The username is "{{ .Values.chris_admin.username }}".
+The password can be revealed by running the command
 
-{{ if (and .Values.nodePort .Values.nodePortHost) }}
+    kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode
+{{ if (and .Values.cube.ingress.nodePort .Values.cube.ingress.nodePortHost) }}
 Your CUBE API address is:
 
-    http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/
+    http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/api/v1/
 
-{{- end }}
+Here is a one-liner for you to check that everything is up and running:
+
+    curl -i --fail-with-body -u "{{ .Values.chris_admin.username }}:$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)" http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/chris-admin/api/v1/
+
 {{ end }}

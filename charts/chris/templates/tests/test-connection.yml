@@ -1,18 +1,45 @@
-{{- if (and .Values.nodePort .Values.nodePortHost ) }}
+{{- define "test.timestamp" -}}{{ now | unixEpoch }}{{- end -}}
+
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ .Release.Name }}-check-server-is-up"
+  name: "{{ .Release.Name }}-test-cube-works-{{ include "test.timestamp" . }}"
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/instance: "{{ .Release.Name }}-check-server-is-up"
+    app.kubernetes.io/name: "{{ include "chris.name" . }}-test-cube-works"
+    app.kubernetes.io/instance: "{{ .Release.Name }}-test-cube-works-{{ include "test.timestamp" . }}"
   annotations:
     "helm.sh/hook": test
+    "kubernetes.io/description": "Test the ChRIS backend by creating a test user, logging in, and uploading a file."
+
 spec:
-  containers:
-    - name: wget
-      image: busybox
-      command: ['wget']
-      args: ['http://{{ .Values.nodePortHost }}:{{ .Values.nodePort }}/api/v1/users/']
   restartPolicy: Never
-{{- end }}
+  containers:
+    - name: create-user-test
+      image: ghcr.io/fnndsc/aiochris:0.3.2
+      command:
+        - python
+        - -c
+        - |
+          import asyncio
+          from pathlib import Path
+          from aiochris import ChrisClient
+
+          url = 'http://{{ .Release.Name }}-heart:8000/api/v1/'
+          username = 'helmtest-{{ include "test.timestamp" . }}'
+          password = '{{ randAlphaNum 32 }}'
+          email = f'{username}@example.org'
+          data = b'Some random data appears on the next line.\n{{ randAlphaNum 64 }}\n'
+
+          async def main():
+              await ChrisClient.create_user(url, username, password, email)
+              chris = await ChrisClient.from_login(url, username, password)
+
+              file = Path('/tmp/testdata.txt')
+              file.write_bytes(data)
+              uploaded_file = await chris.upload_file(file, 'testdata.txt')
+              print(uploaded_file.url)
+
+              await chris.close()
+
+          asyncio.run(main())

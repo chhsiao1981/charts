@@ -6,10 +6,10 @@ cube:
       resources:
         requests:
           memory: 256Mi
-          cpu: 200m
+          cpu: 500m
         limits:
           memory: 256Mi
-          cpu: 200m
+          cpu: 500m
     server:
       resources:
         requests:
@@ -31,3 +31,12 @@ postgresql:
       limits:
         memory: 256Mi
         cpu: 500m
+
+rabbitmq:
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 200m
+    limits:
+      memory: 128Mi
+      cpu: 200m
