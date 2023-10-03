@@ -33,7 +33,7 @@ jobs:
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
-    - name: Connectivity test
+    - name: Run helm test
       run: helm test -n ghactions khris-test
 
     - name: Run upgrade and set new admin password
@@ -63,7 +63,10 @@ jobs:
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
-
+    - name: Run helm test again
+      run: helm test -n ghactions khris-test
+    - name: Test NodePort access
+      run: curl -s --fail-with-body http://localhost:32000/api/v1/
     - name: Uninstall chart
       run: helm uninstall -n ghactions khris-test
     - name: Delete namespace
