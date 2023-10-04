@@ -7,7 +7,7 @@
 Production deployment of [_ChRIS_](https://chrisproject.org/) on [_Kubernetes_](https://kubernetes.io/)
 using [Helm](https://helm.sh/).
 
-Documentation: https://chrisproject.org/docs/deployment
+Documentation: https://chrisproject.org/docs/run/helm
 
 ## Architecture
 
