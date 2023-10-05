@@ -42,6 +42,7 @@ spec:
             {{- toYaml .Values.cube.resources.server.resources | nindent 12 }}
 
       {{- include "cube.pod" . | nindent 6 }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
 
 ---
 

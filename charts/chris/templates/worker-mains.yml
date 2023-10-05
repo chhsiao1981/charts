@@ -40,3 +40,4 @@ spec:
           {{- include "cube.container" . | nindent 10 }}
 
       {{- include "cube.pod" . | nindent 6 }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}

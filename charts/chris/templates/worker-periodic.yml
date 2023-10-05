@@ -48,4 +48,4 @@ spec:
               cpu: 200m
 
       {{- include "cube.pod" . | nindent 6 }}
-
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}

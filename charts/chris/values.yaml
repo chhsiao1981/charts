@@ -56,7 +56,8 @@ cube:
 
   podAnnotations: {}
 
-
+  # Use inter-pod affinity as a workaround for using a ReadWriteOnce PersistentVolumeClaim
+  enablePodAffinityWorkaround: false
 
   # Configuration
   #####################
@@ -128,6 +129,11 @@ cube:
 # https://github.com/bitnami/charts/tree/main/bitnami/postgresql#parameters
 postgresql:
 
+  # no reason to change these values
+  auth:
+    database: "chris"
+    username: "chris"
+
   # one of: [standalone, replication]
   # Replication is supported, see upstream README.md for configuration.
   architecture: standalone
@@ -139,10 +145,15 @@ postgresql:
         memory: 1Gi
         cpu: 1
 
-  # no reason to change these values
-  auth:
-    database: "chris"
-    username: "chris"
+    # Defer control of security configurations to OpenShift
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  volumePermissions:
+    enabled: false
+  shmVolume:
+    enabled: false
 
 # [SUBCHART] RabbitMQ packaged by Bitnami
 # https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq#parameters
@@ -157,3 +168,14 @@ rabbitmq:
   auth:
     username: "chris"
     password: "chris1234"
+
+  persistence:
+    size: 1Gi
+
+  # Defer control of security configurations to OpenShift
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+  volumePermissions:
+    enabled: false

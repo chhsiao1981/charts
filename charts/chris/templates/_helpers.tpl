@@ -96,11 +96,26 @@ securityContext:
 {{- end }}
 {{- end }}
 
+{{- define "cube.podAffinityWorkaround" -}}
+{{ if .Values.cube.enablePodAffinityWorkaround }}
+affinity:
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/instance
+          operator: In
+          values:
+          - {{ .Release.Name }}-heart
+      topologyKey: kubernetes.io/hostname
+{{- end }}
+{{- end }}
+
 # Since the server deployment is the one which defines the database migrations, everything else
 # should start after the server. It's ok for ancillary services to be started late.
 {{- define "cube.waitServerReady" -}}
 - name: wait-for-server
   image: busybox
   command: ["/bin/sh", "-c"]
-  args: ["until wget 'http://{{ .Release.Name }}-heart:8000/api/v1/users/'; do sleep 5; done"]
+  args: ["until wget --spider 'http://{{ .Release.Name }}-heart:8000/api/v1/users/'; do sleep 5; done"]
 {{- end }}
