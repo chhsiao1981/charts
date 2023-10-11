@@ -20,7 +20,7 @@ jobs:
     - name: Install chris
       run: |
         helm install --create-namespace -n ghactions khris-test ./charts/chris \
-          -f testing/ghactions-values.yml --set nodePortHost=$(hostname)
+          -f testing/ghactions-values.yml --set cube.ingress.nodePortHost=$(hostname)
 
     - name: Wait for pods to be ready
       run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=300s
@@ -75,7 +75,7 @@ jobs:
         kubectl logs -n ghactions khris-test-test-cube-works
         exit $status
     - name: Test NodePort access
-      run: curl -s --fail-with-body http://localhost:32000/api/v1/
+      run: curl --fail-with-body http://localhost:32000/api/v1/
     - name: Uninstall chart
       run: helm uninstall -n ghactions khris-test
     - name: Delete namespace
