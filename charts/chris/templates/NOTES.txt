@@ -1,7 +1,7 @@
 The ChRIS backend is being deployed. Please wait for it to be ready.
 You can run this command to block while the server is starting up:
 
-    kubectl wait --for=condition=ready pod -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}-heart --timeout=300s
+    kubectl wait --for=condition=ready pod -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}-server --timeout=300s
 
 After that, try logging in as the admin user. The username is "{{ .Values.chris_admin.username }}".
 The password can be revealed by running the command
