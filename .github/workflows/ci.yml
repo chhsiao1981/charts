@@ -50,7 +50,7 @@ jobs:
       id: restart
       run: |
         kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-heart
-        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=30s
+        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=60s
         most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-heart -o custom-columns=:metadata.name | tail -n 1)
         echo "new_pod=$most_recent_pod" >> "$GITHUB_OUTPUT"
     - name: Wait for pods to be ready again
