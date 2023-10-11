@@ -19,8 +19,7 @@ spec:
         - python
         - -c
         - |
-          import time
-          import random
+          import time, random, string
           import asyncio
           from pathlib import Path
           from aiochris import ChrisClient
