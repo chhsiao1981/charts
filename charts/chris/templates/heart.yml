@@ -94,10 +94,10 @@ spec:
           # hard-coded resources because celery beat shouldn't require variable resources
           resources:
             requests:
-              memory: 128Mi
+              memory: 256Mi
               cpu: 200m
-            requests:
-              memory: 128Mi
+            limits:
+              memory: 256Mi
               cpu: 200m
         - name: server-private
           command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "1", "config.wsgi:application"]
@@ -109,7 +109,7 @@ spec:
             requests:
               memory: 128Mi
               cpu: 200m
-            requests:
+            limits:
               memory: 128Mi
               cpu: 200m
 

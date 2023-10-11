@@ -38,6 +38,8 @@ spec:
         - name: worker-mains
           command: ["celery", "-A", "core", "worker", "-c", "4", "-l", "info", "-Q", "main1,main2"]
           {{- include "cube.container" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.cube.resources.workerMains.resources | nindent 12 }}
 
       {{- include "cube.pod" . | nindent 6 }}
       {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
