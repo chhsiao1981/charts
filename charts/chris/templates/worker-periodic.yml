@@ -41,10 +41,10 @@ spec:
           # hard-coded resources because periodic worker shouldn't require variable resources
           resources:
             requests:
-              memory: 128Mi
+              memory: 256Mi
               cpu: 200m
             requests:
-              memory: 128Mi
+              memory: 256Mi
               cpu: 200m
 
       {{- include "cube.pod" . | nindent 6 }}
