@@ -54,10 +54,14 @@ jobs:
       id: restart
       run: |
         kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-heart
-        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=300s
+        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=60s || (
+          kubectl get pods -n ghactions
+          echo "::warning ::Deployment failed to restart"
+          kubectl describe pod -n ghactions -l app.kubernetes.io/name=chris-heart
+        )
         most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-heart -o custom-columns=:metadata.name | tail -n 1)
         echo "new_pod=$most_recent_pod" >> "$GITHUB_OUTPUT"
-        kubectl wait -n ghactions pod $most_recent_pod --for=condition=ready --timeout=300s
+        kubectl wait -n ghactions pod $most_recent_pod --for=condition=ready --timeout=60s
     - name: Assert superuser password changed
       run: |
         actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.new_pod }} -c create-superuser)"
