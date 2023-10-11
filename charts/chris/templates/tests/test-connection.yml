@@ -1,13 +1,11 @@
-{{- define "test.timestamp" -}}{{ now | unixEpoch }}{{- end -}}
-
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ .Release.Name }}-test-cube-works-{{ include "test.timestamp" . }}"
+  name: "{{ .Release.Name }}-test-cube-works"
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: "{{ include "chris.name" . }}-test-cube-works"
-    app.kubernetes.io/instance: "{{ .Release.Name }}-test-cube-works-{{ include "test.timestamp" . }}"
+    app.kubernetes.io/instance: "{{ .Release.Name }}-test-cube-works"
   annotations:
     "helm.sh/hook": test
     "kubernetes.io/description": "Test the ChRIS backend by creating a test user, logging in, and uploading a file."
@@ -16,18 +14,20 @@ spec:
   restartPolicy: Never
   containers:
     - name: create-user-test
-      image: ghcr.io/fnndsc/aiochris:0.3.2
+      image: ghcr.io/fnndsc/aiochris:0.4.0
       command:
         - python
         - -c
         - |
+          import time
+          import random
           import asyncio
           from pathlib import Path
           from aiochris import ChrisClient
 
           url = 'http://{{ .Release.Name }}-heart:8000/api/v1/'
-          username = 'helmtest-{{ include "test.timestamp" . }}'
-          password = '{{ randAlphaNum 32 }}'
+          username = f'helmtest-{int(time.time())}'
+          password = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
           email = f'{username}@example.org'
           data = b'Some random data appears on the next line.\n{{ randAlphaNum 64 }}\n'
 
