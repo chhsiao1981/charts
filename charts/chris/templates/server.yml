@@ -40,6 +40,12 @@ spec:
               containerPort: 8000
           resources:
             {{- toYaml .Values.cube.resources.server.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /api/v1/users/
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 3
 
       {{- include "cube.pod" . | nindent 6 }}
       {{- include "cube.podAffinityWorkaround" . | nindent 6 }}

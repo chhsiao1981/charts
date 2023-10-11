@@ -112,6 +112,12 @@ spec:
             limits:
               memory: 128Mi
               cpu: 200m
+          livenessProbe:
+            httpGet:
+              path: /api/v1/users/
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 3
 
       {{- include "cube.pod" . | nindent 6 }}
 
