@@ -1,4 +1,4 @@
-# This file is for cutomizing how chris-cube is deployed.
+# This file is for cutomizing how chris is deployed.
 
 # Name
 #####################
@@ -25,7 +25,7 @@ global:
   #   runAsGroup: 789
 
 
-
+# Not used
 serviceAccount:
   # Specifies whether a service account should be created
   create: false
@@ -92,31 +92,42 @@ cube:
   #####################
   resources:
     files:
-      accessModes:
-      - ReadWriteOnce
-      ## storage class to use for ChRIS files storage
+      accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          ## how much storage for ChRIS files
+          ## How much storage for ChRIS files. Considering that resizing a PVC might not be possible,
+          ## it is recommended to use as large of a value as you may.
           storage: 100Gi
 
     workerMains:
+      ## Resources for the main worker.
+      ## It requires a large memory allocation due to an inefficient implementation.
+      ## Recommended value is x4 the size of the largest anticipated plugin instance output directory.
       resources:
-        ## Resources for the main worker.
-        ## It requires a large memory allocation because an inefficient function
-        ## buffers all the input files of a job are buffered into memory.
         requests:
-          memory: 40Gi
-          cpu: 4
+          memory: 20Gi
+          cpu: 2
         limits:
-          memory: 41Gi
-          cpu: 4
+          memory: 21Gi
+          cpu: 2
+
+    workerPeriodic:
+      ## Resources for the periodic worker.
+      ## Default values should be okay. Memory request may be further reduced to ~400Mi.
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 250m
+        limits:
+          memory: 1.1Gi
+          cpu: 250m
 
     server:
-      ## resources for the HTTP server (WSGI)
+      ## resources for the HTTP server (WSGI).
+      ## Default values should be okay. Memory request may be further reduced to ~400Mi.
       resources:
         requests:
-          memory: 512Mi
+          memory: 1Gi
           cpu: 1
         limits:
           memory: 1Gi

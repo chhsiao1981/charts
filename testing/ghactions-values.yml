@@ -5,13 +5,18 @@ cube:
     workerMains:
       resources:
         requests:
-          memory: 512Mi
-          cpu: 500m
+          memory: 400Mi
+          cpu: 200m
+    workerPeriodic:
+      resources:
+        requests:
+          memory: 400Mi
+          cpu: 200m
     server:
       resources:
         requests:
-          memory: 512Mi
-          cpu: 500m
+          memory: 400Mi
+          cpu: 200m
 
   ingress:
     nodePort: "32000"
@@ -21,10 +26,10 @@ postgresql:
     resources:
       requests:
         memory: 256Mi
-        cpu: 500m
+        cpu: 200m
 
 rabbitmq:
   resources:
     requests:
-      memory: 128Mi
+      memory: 256Mi
       cpu: 200m
