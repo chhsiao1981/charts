@@ -34,6 +34,7 @@ spec:
         {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: server
+          command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "{{ .Values.cube.resources.server.workers }}", "config.wsgi:application"]
           {{- include "cube.container" . | nindent 10 }}
           ports:
             - name: http

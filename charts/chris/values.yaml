@@ -123,14 +123,15 @@ cube:
           cpu: 250m
 
     server:
+      workers: 4
       ## resources for the HTTP server (WSGI).
-      ## Default values should be okay. Memory request may be further reduced to ~400Mi.
+      ## Default values should be okay. About 256Mi of memory is needed per idle worker.
       resources:
         requests:
-          memory: 1Gi
+          memory: 2Gi
           cpu: 1
         limits:
-          memory: 1Gi
+          memory: 2Gi
           cpu: 1
 
 # Database
