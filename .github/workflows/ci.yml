@@ -3,9 +3,33 @@ name: ci
 on:
   push:
     branches: [ master, dev ]
+    paths:
+      - '.github/workflows/**'
+      - 'charts/**'
+      - 'testing/**'
   pull_request:
 
 jobs:
+  test-pfcon:
+    name: Test pfcon
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Start Kubernetes
+        run: kind create cluster --config=testing/kind-with-nodeport.yml
+      - name: Install pfcon
+        run: helm install --create-namespace -n ghactions kfcon-test ./charts/pfcon
+      - name: Wait for pfcon to be ready
+        run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=pfcon --timeout=300s
+      - name: Test
+        run: helm test -n ghactions kfcon-test
+      - name: Uninstall chart
+        run: helm uninstall -n ghactions kfcon-test
+      - name: Delete namespace
+        run: kubectl delete namespace ghactions
+      - name: Delete cluster
+        run: kind delete cluster
   test-cube:
     name: Test CUBE
     runs-on: ubuntu-22.04
@@ -84,7 +108,7 @@ jobs:
   
   # https://helm.sh/docs/howto/chart_releaser_action/
   release:
-    needs: [ test-cube ]
+    needs: [ test-pfcon, test-cube ]
     runs-on: ubuntu-22.04
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/master'
     steps:
