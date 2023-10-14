@@ -39,7 +39,7 @@ spec:
           command: ["celery", "-A", "core", "worker", "-c", "2", "-l", "info", "-Q", "periodic"]
           {{- include "cube.container" . | nindent 10 }}
           resources:
-            {{- toYaml .Values.cube.resources.workerPeriodic.resources | nindent 12 }}
+            {{- toYaml .Values.cube.workerPeriodic.resources | nindent 12 }}
 
       {{- include "cube.pod" . | nindent 6 }}
       {{- include "cube.podAffinityWorkaround" . | nindent 6 }}

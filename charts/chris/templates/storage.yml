@@ -6,11 +6,13 @@ metadata:
   labels:
     {{- include "cube.labels" . | nindent 4 }}
 spec:
-  {{- if .Values.global.storageClass }}
+  {{- if .Values.cube.storage.storageClass }}
+  storageClassName: {{ .Values.cube.storage.storageClass }}
+  {{- else if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
   accessModes:
-  {{- toYaml .Values.cube.resources.files.accessModes | nindent 4 }}
+  {{- toYaml .Values.cube.storage.accessModes | nindent 4 }}
   resources:
     requests:
-      storage: {{ .Values.cube.resources.files.resources.requests.storage }}
+      storage: {{ .Values.cube.storage.size }}

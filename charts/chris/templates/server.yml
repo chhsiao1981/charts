@@ -34,13 +34,13 @@ spec:
         {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: server
-          command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "{{ .Values.cube.resources.server.workers }}", "config.wsgi:application"]
+          command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "{{ .Values.cube.server.workers }}", "config.wsgi:application"]
           {{- include "cube.container" . | nindent 10 }}
           ports:
             - name: http
               containerPort: 8000
           resources:
-            {{- toYaml .Values.cube.resources.server.resources | nindent 12 }}
+            {{- toYaml .Values.cube.server.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /api/v1/users/

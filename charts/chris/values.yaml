@@ -90,49 +90,50 @@ cube:
 
   # Resources
   #####################
-  resources:
-    files:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          ## How much storage for ChRIS files. Considering that resizing a PVC might not be possible,
-          ## it is recommended to use as large of a value as you may.
-          storage: 100Gi
+  # Persistent volume for CUBE files
+  storage:
+    # In the default configuration, the volume is managed by pfcon's subchart, so leave this as "enabled: false"
+    enabled: false
+    size: 100Gi
+    accessModes: [ "ReadWriteOnce" ]
+    # storageClass: ""
 
-    workerMains:
-      ## Resources for the main worker.
-      ## It requires a large memory allocation due to an inefficient implementation.
-      ## Recommended value is x4 the size of the largest anticipated plugin instance output directory.
-      resources:
-        requests:
-          memory: 20Gi
-          cpu: 2
-        limits:
-          memory: 21Gi
-          cpu: 2
+  # Resources
+  #####################
+  workerMains:
+    ## Resources for the main worker.
+    ## It requires a large memory allocation due to an inefficient implementation.
+    ## Recommended value is x4 the size of the largest anticipated plugin instance output directory.
+    resources:
+      requests:
+        memory: 20Gi
+        cpu: 2
+      limits:
+        memory: 21Gi
+        cpu: 2
 
-    workerPeriodic:
-      ## Resources for the periodic worker.
-      ## Default values should be okay. Memory request may be further reduced to ~400Mi.
-      resources:
-        requests:
-          memory: 1Gi
-          cpu: 250m
-        limits:
-          memory: 1.1Gi
-          cpu: 250m
+  workerPeriodic:
+    ## Resources for the periodic worker.
+    ## Default values should be okay. Memory request may be further reduced to ~400Mi.
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 250m
+      limits:
+        memory: 1.1Gi
+        cpu: 250m
 
-    server:
-      workers: 4
-      ## resources for the HTTP server (WSGI).
-      ## Default values should be okay. About 256Mi of memory is needed per idle worker.
-      resources:
-        requests:
-          memory: 2Gi
-          cpu: 1
-        limits:
-          memory: 2Gi
-          cpu: 1
+  server:
+    workers: 4
+    ## resources for the HTTP server (WSGI).
+    ## Default values should be okay. About 256Mi of memory is needed per idle worker.
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 1
+      limits:
+        memory: 2Gi
+        cpu: 1
 
 # Database
 #####################
@@ -191,3 +192,6 @@ rabbitmq:
     enabled: false
   volumePermissions:
     enabled: false
+
+pfcon:
+  enabled: false
