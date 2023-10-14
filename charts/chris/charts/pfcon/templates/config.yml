@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-pfcon
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pfcon.labels" . | nindent 4 }}
+data:
+  PFCON_INNETWORK: {{ .Values.pfcon.config.innetwork | quote }}
+  STORAGE_ENV: {{ .Values.pfcon.config.storageEnv }}

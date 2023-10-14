@@ -1,0 +1,20 @@
+{{ if not .Values.storage.existingClaim  }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-storebase
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pfcon.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.storage.storageClass }}
+  storageClassName: {{ .Values.storage.storageClass }}
+  {{- else if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
+  {{- end }}
+  accessModes:
+  {{- toYaml .Values.storage.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+{{ end }}

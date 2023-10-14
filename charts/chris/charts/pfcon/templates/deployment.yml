@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pfcon.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pfcon.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pfcon.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pfcon.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "pfcon.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: pfcon
+          image: "{{ .Values.pfcon.image.repository }}:{{ .Values.pfcon.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pfcon.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-pfcon
+            - secretRef:
+                name: {{ .Release.Name }}-pfcon
+          env:
+            - name: COMPUTE_SERVICE_URL
+              # pman and pfcon are in the same pod
+              value: http://localhost:5010/api/v1/
+            - name: STOREBASE_MOUNT
+              value: /var/local/storeBase
+          volumeMounts:
+            - mountPath: /var/local/storeBase
+              name: storebase
+          ports:
+            - name: http
+              containerPort: 5005
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            {{- toYaml .Values.pfcon.resources | nindent 12 }}
+
+      volumes:
+        - name: storebase
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.existingClaim | default (printf "%s-storebase" .Release.Name) }}

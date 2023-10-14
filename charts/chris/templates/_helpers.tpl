@@ -90,9 +90,9 @@ volumes:
   - name: file-storage
     persistentVolumeClaim:
       claimName: {{ .Release.Name }}-cube-files
-{{- if .Values.global.securityContext }}
+{{- if .Values.global.podSecurityContext }}
 securityContext:
-  {{- toYaml .Values.global.securityContext | nindent 2 }}
+  {{- toYaml .Values.global.podSecurityContext | nindent 2 }}
 {{- end }}
 {{- end }}
 

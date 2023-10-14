@@ -19,8 +19,8 @@ global:
   # storage class to use for persistent volume claims
   storageClass: ""
 
-  # optional security context to apply to all containers
-  # securityContext:
+  # optional security context to apply to all pods
+  # podSecurityContext:
   #   runAsUser: 123456
   #   runAsGroup: 789
 
@@ -52,7 +52,7 @@ cube:
     repository: ghcr.io/fnndsc/cube
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "5.0.0"
+    tag: ""
 
   podAnnotations: {}
 

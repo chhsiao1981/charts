@@ -1,0 +1,16 @@
+apiVersion: v2
+name: pfcon
+description: API for a ChRIS remote compute resource
+
+sources:
+- https://github.com/FNNDSC/charts
+- https://github.com/FNNDSC/pfcon
+
+type: application
+version: "0.0.1"
+appVersion: "5.2.2"
+
+maintainers:
+- name: The FNNDSC Dev Team
+  email: dev@babyMRI.org
+  url: https://fnndsc.org

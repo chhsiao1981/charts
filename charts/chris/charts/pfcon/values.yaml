@@ -1,0 +1,61 @@
+# Default values for pfcon.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Global settings
+#####################
+
+global:
+  # storage class to use for persistent volume claims
+  storageClass: ""
+
+  # optional security context to apply to all pods
+  # podSecurityContext:
+  #   runAsUser: 123456
+  #   runAsGroup: 789
+
+replicaCount: 1
+
+podAnnotations: {}
+
+service:
+  type: ClusterIP
+  port: 5005
+
+storage:
+  existingClaim: ""
+  size: 100Gi
+  accessModes: [ "ReadWriteOnce" ]
+  # storageClass:
+
+pfcon:
+  image:
+    repository: ghcr.io/fnndsc/pfcon
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 500m
+      memory: 256Mi
+
+  config:
+    innetwork: true
+    storageEnv: filesystem
