@@ -56,8 +56,27 @@ spec:
             periodSeconds: 3
           resources:
             {{- toYaml .Values.pfcon.resources | nindent 12 }}
-
+        - name: pman
+          image: "{{ .Values.pman.image.repository }}:{{ .Values.pman.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pman.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-pman
+            - secretRef:
+                name: {{ .Release.Name }}-pman
+          ports:
+            - name: http
+              containerPort: 5010
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /api/v1/
+          #     port: http
+          #   initialDelaySeconds: 3
+          #   periodSeconds: 3
+          resources:
+            {{- toYaml .Values.pman.resources | nindent 12 }}
       volumes:
         - name: storebase
           persistentVolumeClaim:
-            claimName: {{ .Values.storage.existingClaim | default (printf "%s-storebase" .Release.Name) }}
+            claimName: {{ include "pfcon.storebase" . }}

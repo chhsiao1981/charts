@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-pman
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pfcon.labels" . | nindent 4 }}
+data:
+  CONTAINER_ENV: kubernetes
+  STORAGE_TYPE: kubernetes_pvc
+  VOLUME_NAME: {{ include "pfcon.storebase" . }}
+  {{- toYaml .Values.pman.config | nindent 2 }}
+  {{- if .Values.global.podSecurityContext }}
+  CONTAINER_USER: "{{ .Values.global.podSecurityContext.runAsUser }}:{{ .Values.global.podSecurityContext.runAsGroup }}"
+  {{- end }}

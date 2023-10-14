@@ -56,6 +56,33 @@ pfcon:
       cpu: 500m
       memory: 256Mi
 
+  # pfcon configuration
+  # Recommended to keep as-is
   config:
     innetwork: true
     storageEnv: filesystem
+
+pman:
+  image:
+    repository: ghcr.io/fnndsc/pman
+    pullPolicy: IfNotPresent
+    tag: "6.0.1"
+
+  # It is unnecessary to increase pman's resources to above the minimum because
+  # pman doesn't do anything besides sending and receiving HTTP requests.
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  # pman configuration
+  # https://github.com/fnndsc/pman#environment-variables
+  # SECRET_KEY, CONTAINER_ENV, STORAGE_TYPE, VOLUME_NAME, and CONTAINER_USER are handled automaticallY
+  config:
+    JOB_LABELS: chrisproject.org/job=plugininstance
+    ENABLE_HOME_WORKAROUND: "yes"
+    REMOVE_JOBS: "yes"
+    IGNORE_LIMITS: "no"
