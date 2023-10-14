@@ -9,8 +9,21 @@ metadata:
     "helm.sh/hook": test
 spec:
   containers:
-    - name: wget
-      image: busybox
-      command: ['wget']
-      args: ['http://{{ include "pfcon.fullname" . }}:{{ .Values.service.port }}/api/v1/health/']
+    - name: test-pfcon
+      image: docker.io/curlimages/curl:8.4.0
+      command: ["curl"]
+      args:
+        - "-sSf"
+        - "-X"
+        - "POST"
+        - "http://{{ include "pfcon.fullname" . }}:{{ .Values.service.port }}/api/v1/auth-token/"
+        - "-H"
+        - "Accept: application/json"
+        - "-H"
+        - "Content-Type: application/json"
+        - "--data"
+        - '{"pfcon_user": "pfcon", "pfcon_password": "$(PFCON_PASSWORD)"}'
+      envFrom:
+        - secretRef:
+            name: {{ .Release.Name }}-pfcon
   restartPolicy: Never
