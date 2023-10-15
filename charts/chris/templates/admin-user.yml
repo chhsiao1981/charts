@@ -5,6 +5,7 @@ metadata:
   name: {{ .Release.Name }}-chris-superuser
   namespace: {{ .Release.Namespace }}
   labels:
+    app.kubernetes.io/name: "chris-superuser"
     {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "Automatically created system ChRIS admin user"
