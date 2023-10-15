@@ -31,10 +31,11 @@ init:
     ./init.sh
 
 chrisomatic:
+    [ -f chrisomatic.yml ] || just init
     docker run --rm -it \
         -v "$PWD/chrisomatic.yml:/chrisomatic.yml:ro" \
         -v "/var/run/docker.sock:/var/run/docker.sock" \
-        ghcr.io/fnndsc/chrisomatic:0.7.0
+        ghcr.io/fnndsc/chrisomatic:0.7.1
 
 get-url:
     echo "http://$(hostname):$(just get-nodeport)/api/v1/"

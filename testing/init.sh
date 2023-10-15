@@ -13,6 +13,9 @@ cube:
   compute_resource:
     - name: host
       url: http://example.org/api/v1/
+      username: pfcon
+      password: pfcon1234
+      description: "Does not work"
       innetwork: true
   plugins:
     - pl-dircopy
