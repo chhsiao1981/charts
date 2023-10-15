@@ -57,6 +57,32 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+CUBE file storage
+--------------------------------------------------------------------------------
+In the default configuration, pfcon is configured as "innetwork" and CUBE uses
+the volume managed by the pfcon subchart for file storage.
+If pfcon is not enabled or not configured as "innetwork" then CUBE needs to create
+its own PVC.
+*/}}
+{{- define "cube.shouldCreateVolume" -}}
+{{- if (and .Values.pfcon.enabled .Values.pfcon.pfcon.config.innetwork) -}}
+false
+{{- else -}}
+true
+{{- end }}
+{{- end }}
+
+{{- define "cube.filesVolume" -}}
+{{- if (include "cube.shouldCreateVolume" .) -}}
+{{- /* will be created by ./storage.yml */ -}}
+{{ .Release.Name }}-cube-files
+{{- else -}}
+{{- /* defined in ../../pfcon/templates/storage.yml */ -}}
+{{ .Release.Name }}-storebase
+{{- end }}
+{{- end }}
+
+{{/*
 CUBE container common properties
 --------------------------------------------------------------------------------
 */}}
@@ -89,7 +115,7 @@ env:
 volumes:
   - name: file-storage
     persistentVolumeClaim:
-      claimName: {{ .Release.Name }}-cube-files
+      claimName: {{ include "cube.filesVolume" . }}
 {{- if .Values.global.podSecurityContext }}
 securityContext:
   {{- toYaml .Values.global.podSecurityContext | nindent 2 }}

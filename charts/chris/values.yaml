@@ -194,4 +194,68 @@ rabbitmq:
     enabled: false
 
 pfcon:
-  enabled: false
+  enabled: true
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  replicaCount: 1
+
+  podAnnotations: {}
+
+  service:
+    type: ClusterIP
+    port: 5005
+
+  # Storage space for CUBE files should be configured here.
+  # It is recommended to allocate as much space as possible for CUBE files.
+  storage:
+    existingClaim: ""
+    size: 100Gi
+    accessModes: [ "ReadWriteOnce" ]
+    # storageClass:
+
+  pfcon:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
+
+    # pfcon configuration
+    # Recommended to keep as-is
+    config:
+      innetwork: true
+      storageEnv: filesystem
+
+  pman:
+    # It is unnecessary to increase pman's resources to above the minimum because
+    # pman doesn't do anything besides sending and receiving HTTP requests.
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+    # pman configuration
+    # https://github.com/fnndsc/pman#environment-variables
+    # SECRET_KEY, CONTAINER_ENV, STORAGE_TYPE, VOLUME_NAME, and CONTAINER_USER are handled automaticallY
+    config:
+      JOB_LABELS: chrisproject.org/job=plugininstance
+      ENABLE_HOME_WORKAROUND: "yes"
+      REMOVE_JOBS: "yes"
+      IGNORE_LIMITS: "no"

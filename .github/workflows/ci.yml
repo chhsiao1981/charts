@@ -33,7 +33,9 @@ jobs:
   test-cube:
     name: Test CUBE
     runs-on: ubuntu-22.04
-
+    strategy:
+      matrix:
+        pfconEnabled: [ 'true', 'false' ]
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
@@ -44,7 +46,9 @@ jobs:
     - name: Install chris
       run: |
         helm install --create-namespace -n ghactions khris-test ./charts/chris \
-          -f testing/ghactions-values.yml --set cube.ingress.nodePortHost=$(hostname)
+          -f testing/ghactions-values.yml \
+          --set cube.ingress.nodePortHost=$(hostname) \
+          --set pfcon.enabled=${{ matrix.pfconEnabled }}
 
     - name: Wait for server pod to be ready
       run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=chris-server --timeout=300s
