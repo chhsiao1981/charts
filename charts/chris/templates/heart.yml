@@ -95,10 +95,10 @@ spec:
           resources:
             requests:
               memory: 384Mi
-              cpu: 200m
+              cpu: 100m
             limits:
               memory: 512Mi
-              cpu: 200m
+              cpu: 100m
         - name: server-private
           command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "1", "config.wsgi:application"]
           {{- include "cube.container" . | nindent 10 }}
@@ -108,10 +108,10 @@ spec:
           resources:
             requests:
               memory: 384Mi
-              cpu: 200m
+              cpu: 100m
             limits:
               memory: 512Mi
-              cpu: 200m
+              cpu: 100m
           livenessProbe:
             httpGet:
               path: /api/v1/users/

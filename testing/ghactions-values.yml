@@ -1,23 +1,22 @@
 cube:
   # Resource requests are lowered for Github's VMs
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-  resources:
-    workerMains:
-      resources:
-        requests:
-          memory: 400Mi
-          cpu: 200m
-    workerPeriodic:
-      resources:
-        requests:
-          memory: 400Mi
-          cpu: 200m
-    server:
-      workers: 2
-      resources:
-        requests:
-          memory: 512Mi
-          cpu: 200m
+  workerMains:
+    resources:
+      requests:
+        memory: 400Mi
+        cpu: 100m
+  workerPeriodic:
+    resources:
+      requests:
+        memory: 400Mi
+        cpu: 100m
+  server:
+    workers: 2
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 200m
 
   ingress:
     nodePort: "32000"
