@@ -21,5 +21,15 @@ Then you can run things like:
 ```shell
 cd testing
 
+just kind
 just up
+just wait
+just test
+```
+
+Then, graceful tear down:
+
+```shell
+just down
+just unkind
 ```

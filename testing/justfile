@@ -17,6 +17,9 @@ down:
     helm uninstall -n kk cacao
     kubectl delete ns kk
 
+wait:
+    kubectl wait --for=condition=ready pod -n kk -l app.kubernetes.io/name=chris-server --timeout=300s
+
 test:
     helm test -n kk cacao
 
