@@ -11,20 +11,15 @@ The most important chart of this repository is [chris](./charts/chris), see its 
 ## Development
 
 If you already have Docker installed, the easiest way to obtain k8s is [KinD](https://kind.sigs.k8s.io/).
-[Install `kind`](https://kind.sigs.k8s.io/docs/user/quick-start/) then run
+KinD installation instructions are here: https://kind.sigs.k8s.io/docs/user/quick-start/
+
+Development scripts are defined in `testing/justfile`, which uses the [just](https://github.com/casey/just) syntax.
+You should install `just`: https://github.com/casey/just#installation
+
+Then you can run things like:
 
 ```shell
-kind create cluster --config=testing/kind-with-nodeport.yml
-```
+cd testing
 
-Download dependent subcharts:
-
-```shell
-for dir in ./charts/*/; do helm dependency update "$dir"; done
-```
-
-The kind configuration file exposes a bunch of NodePorts, so you can use them for communicating with the cluster. For example, you can run
-
-```shell
-helm install --create-namespace -n kk --set cube.ingress.nodePortHost=$(hostname) --set cube.ingress.nodePort=32000 cacao ./charts/chris
+just up
 ```

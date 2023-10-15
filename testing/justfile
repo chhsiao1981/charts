@@ -1,0 +1,43 @@
+# namespace: "kk"
+# release name: "cacao"
+# these values are hard-coded and short for convenience
+
+kind:
+    kind create cluster --name khris --config kind-with-nodeport.yml
+
+unkind:
+    kind delete cluster --name khris
+
+up:
+    helm upgrade --reuse-values --create-namespace --install \
+        -n kk cacao ../charts/chris \
+        --set cube.ingress.nodePort=32000 --set cube.ingress.nodePortHost=$(hostname)
+
+down:
+    helm uninstall -n kk cacao
+    kubectl delete ns kk
+
+test:
+    helm test -n kk cacao
+
+test-fs:
+    [ -f venv/bin/activate ] || (python -m venv venv && venv/bin/pip install aiochris)
+    source venv/bin/activate && python test_fs.py
+
+init:
+    ./init.sh
+
+chrisomatic:
+    docker run --rm -it \
+        -v "$PWD/chrisomatic.yml:/chrisomatic.yml:ro" \
+        -v "/var/run/docker.sock:/var/run/docker.sock" \
+        ghcr.io/fnndsc/chrisomatic:0.7.0
+
+get-url:
+    echo "http://$(hostname):$(just get-nodeport)/api/v1/"
+
+get-nodeport:
+    kubectl get service -n kk -l app.kubernetes.io/name=chris-api-nodeport -o jsonpath='{.items[0].spec.ports[0].nodePort}'
+
+get-su key:
+    kubectl get secret -n kk -l app.kubernetes.io/name=chris-superuser -o jsonpath='{.items[0].data.{{key}}}' | base64 -d
