@@ -51,10 +51,10 @@ pfcon:
   resources:
     limits:
       cpu: 500m
-      memory: 256Mi
+      memory: 1Gi
     requests:
       cpu: 500m
-      memory: 256Mi
+      memory: 384Mi
 
   # pfcon configuration
   # Recommended to keep as-is
@@ -72,11 +72,11 @@ pman:
   # pman doesn't do anything besides sending and receiving HTTP requests.
   resources:
     limits:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 1Gi
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 512Mi
 
   # pman configuration
   # https://github.com/fnndsc/pman#environment-variables
