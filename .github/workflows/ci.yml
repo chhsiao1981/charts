@@ -47,7 +47,6 @@ jobs:
         set +ex
         helm test -n ghactions khris-test
         status=$?
-        kubectl logs -n ghactions khris-test-pfcon-test-connection
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
@@ -83,7 +82,6 @@ jobs:
         set +ex
         helm test -n ghactions khris-test
         status=$?
-        kubectl logs -n ghactions khris-test-pfcon-test-connection
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
