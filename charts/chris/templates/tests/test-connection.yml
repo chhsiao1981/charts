@@ -19,10 +19,12 @@ spec:
         - python
         - -c
         - |
-          import time, random, string
+          import time, random, string, sys, logging
           import asyncio
           from pathlib import Path
-          from aiochris import ChrisClient
+          from aiochris import ChrisClient, Status
+
+          logging.basicConfig(level=logging.INFO)
 
           url = 'http://{{ .Release.Name }}-heart:8000/api/v1/'
           username = f'helmtest-{int(time.time())}'
@@ -31,17 +33,36 @@ spec:
           data = b'Some random data appears on the next line.\n{{ randAlphaNum 64 }}\n'
 
           async def main():
-              await ChrisClient.create_user(url, username, password, email)
+              created_user = await ChrisClient.create_user(url, username, password, email)
+              logging.info(f'created user {created_user}')
               chris = await ChrisClient.from_login(url, username, password)
 
-              file = Path('/tmp/testdata.txt')
+              file = Path('/tmp/data.txt')
               file.write_bytes(data)
-              uploaded_file = await chris.upload_file(file, 'testdata.txt')
-              print(uploaded_file.url)
+              uploaded_file = await chris.upload_file(file, 'helm-test/data.txt')
+              logging.info(f'uploaded file {uploaded_file.url}')
+
+              plugin = await chris.search_plugins(name_exact='pl-dircopy').get_only(allow_multiple=True)
+              logging.info(f'found plugin {plugin.name} id={plugin.id}')
+
+              plinst = await plugin.create_instance(dir=f'{username}/uploads/helm-test', cpu_limit='100m', memory_limit='512Mi')
+              logging.info(f'submitted plugin instance {plinst.id}')
+              feed = await plinst.get_feed()
+              logging.info(f'created feed {feed.url}')
+              feed = await feed.set(name='Test from Helm')
+              logging.info(f'Feed name was set to {feed.name}')
+
+              elapsed, finished = await plinst.wait()
+              logging.info(f'Finished after {elapsed:.2f}s, status={finished.status}')
 
               await chris.close()
+              return finished.status
 
-          asyncio.run(main())
+          if __name__ == '__main__':
+              status = asyncio.run(main())
+              if status != Status.finishedSuccessfully:
+                  sys.exit(1)
+
       resources:
         requests:
           memory: 256Mi

@@ -84,9 +84,9 @@ cube:
   # Plugins which CUBE is hard-coded to depend on should be listed here.
   # To add plugins for general use, see https://chrisproject.org/docs/tutorials/upload_plugin
   plugins:
-    - https://cube.chrisproject.org/api/v1/plugins/65/ # pl-dircopy
-    - https://cube.chrisproject.org/api/v1/plugins/81/ # pl-tsdircopy
-    - https://cube.chrisproject.org/api/v1/plugins/10/ # pl-topologicalcopy
+    - https://cube.chrisproject.org/api/v1/plugins/170/ # pl-dircopy
+    - https://cube.chrisproject.org/api/v1/plugins/81/  # pl-tsdircopy
+    - https://cube.chrisproject.org/api/v1/plugins/10/  # pl-topologicalcopy
 
   # Ingress
   #####################

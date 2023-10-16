@@ -29,9 +29,8 @@ wait:
 test:
     helm test -n kk cacao
 
-test-fs:
-    [ -f venv/bin/activate ] || (python -m venv venv && venv/bin/pip install aiochris)
-    source venv/bin/activate && python test_fs.py
+create-user username password:
+    xh :32000/api/v1/users/ username='{{ username }}' password='{{ password }}' email='{{ username }}@example.org'
 
 init:
     ./init.sh
