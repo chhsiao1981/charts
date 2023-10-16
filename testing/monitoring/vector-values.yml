@@ -1,0 +1,106 @@
+# See default values for Vector by running
+#
+#     helm show values vector/vector
+
+# role -- [Role](https://vector.dev/docs/setup/deployment/roles/) for this Vector instance, valid options are:
+# "Agent", "Aggregator", and "Stateless-Aggregator".
+
+# Each role is created with the following workloads:
+# Agent = DaemonSet
+# Aggregator = StatefulSet
+# Stateless-Aggregator = Deployment
+role: "Agent"
+
+
+service:
+  enabled: false
+
+# customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
+# using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
+# for all options.
+customConfig:
+  data_dir: /vector-data-dir
+  api:
+    enabled: false
+  sources:
+    # https://vector.dev/docs/reference/configuration/sources/kubernetes_logs/
+    kubernetes_logs:
+      type: kubernetes_logs
+  # https://vector.dev/docs/reference/configuration/transforms/log_to_metric/#examples-sum
+  transforms:
+    # Logging done by the pypx-listener service's handler, rx-repack
+    rx_repack_logs:
+      type: filter
+      inputs:
+        - kubernetes_logs
+      condition:
+        type: vrl
+        source: .kubernetes.pod_labels."chrisproject.org/logging" == "rx-repack-ndjson" && .stream == "stdout"
+    rx_repack_json:
+      type: remap
+      inputs:
+        - rx_repack_logs
+      source: . = parse_json!(.message)
+    rx_repack_metrics:
+      type: log_to_metric
+      inputs:
+        - rx_repack_json
+      metrics:
+        # count of packed files
+        - namespace: rx_repack
+          name: packed_count_total
+          type: counter
+          field: dst
+        # sum of packed files size
+        - namespace: rx_repack
+          name: packed_bytes_total
+          type: counter
+          field: size
+          increment_by_value: true
+  sinks:
+    # https://openobserve.ai/docs/ingestion/logs/vector/
+    openobserve-logs:
+      type: http
+      inputs:
+        - kubernetes_logs
+      uri: http://openobserve-nodeport:5080/api/default/k8s/_json
+      method: post
+      auth:
+        strategy: basic
+        user: dev@babymri.org
+        password: chris1234
+      compression: gzip
+      encoding:
+        codec: json
+        timestamp_format: rfc3339
+      healthcheck:
+        enabled: false
+
+      # https://github.com/vectordotdev/vector/issues/2710
+      # labels:
+      #   # Go template mustache bracket escape
+      #   # https://github.com/helm/helm/issues/2798#issuecomment-518207645
+      #   file: '{{ "{{" }} file {{ "}}" }}'
+      #   stream: '{{ "{{" }} stream {{ "}}" }}'
+      #   source_type: '{{ "{{" }} file {{ "}}" }}'
+      #   # https://vector.dev/docs/reference/configuration/sources/kubernetes_logs/#pod_annotation_fields
+      #   k8s_pod_namespace: '{{ "{{" }} kubernetes.pod_namespace {{ "}}" }}'
+      #   k8s_pod_name: '{{ "{{" }} kubernetes.pod_name {{ "}}" }}'
+      #   k8s_container_name: '{{ "{{" }} kubernetes.container_name {{ "}}" }}'
+      #   k8s_container_image: '{{ "{{" }} kubernetes.container_image {{ "}}" }}'
+      #   k8s_pod_label_app_kubernetes_io_name: '{{ "{{" }} kubernetes.pod_labels."app.kubernetes.io/name" {{ "}}" }}'
+
+# Configuration for Vector's data persistence.
+persistence:
+  # persistence.enabled -- If true, create and use PersistentVolumeClaims.
+  enabled: true
+  hostPath:
+    # persistence.hostPath.enabled -- If true, use hostPath persistence. Valid for the "Agent" role, if it's disabled
+    # the "Agent" role will use emptyDir.
+    enabled: true
+    # persistence.hostPath.path -- Override path used for hostPath persistence. Valid for the "Agent" role, persistence
+    # is always used for the "Agent" role.
+    path: "/var/lib/vector"
+
+# Log level for Vector.
+logLevel: "warn"

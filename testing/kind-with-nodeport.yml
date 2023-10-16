@@ -43,5 +43,10 @@ nodes:
     hostPort: 32009
     listenAddress: "0.0.0.0"
     protocol: tcp
+  - containerPort: 32020
+    hostPort: 32020
+    listenAddress: "0.0.0.0"
+    protocol: tcp
+
 - role: worker
 - role: worker

@@ -2,6 +2,9 @@
 # release name: "cacao"
 # these values are hard-coded and short for convenience
 
+# Startup and Shutdown Commands
+# --------------------------------------------------------------------------------
+
 kind:
     kind create cluster --name khris --config kind-with-nodeport.yml
 
@@ -16,6 +19,9 @@ up:
 down:
     helm uninstall -n kk cacao
     kubectl delete ns kk
+
+# Development Commands
+# --------------------------------------------------------------------------------
 
 wait:
     kubectl wait --for=condition=ready pod -n kk -l app.kubernetes.io/name=chris-server --timeout=300s
@@ -40,8 +46,27 @@ chrisomatic:
 shell:
     kubectl exec -it -n kk deploy/cacao-chris-server -- bash
 
+observe:
+    [ -n "$(kubectl get ns -l kubernetes.io/metadata.name=monitoring -o name)" ] || kubectl create ns monitoring
+
+    helm repo add vector https://helm.vector.dev
+    helm repo update vector
+    helm upgrade --install --create-namespace -n monitoring -f monitoring/vector-values.yml vector vector/vector
+
+    kubectl apply -f monitoring/openobserve.yml
+    kubectl rollout status -n monitoring statefulset openobserve
+    sleep 1
+    xdg-open "http://localhost:32020/web/logs?stream=k8s&period=5m&refresh=0&sql_mode=false&query=a3ViZXJuZXRlc19wb2RfbmFtZXNwYWNlPSdrayc=&org_identifier=default"
+
+rm-observe:
+    kubectl delete -f monitoring/openobserve.yml; kubectl delete -n monitoring pvc -l app=openobserve
+
+olog name:
+    ./get_openobserve_logs.sh '{{ name }}'
+
+
 # Helper Functions
-# ----------
+# --------------------------------------------------------------------------------
 
 get-url:
     echo "http://$(hostname):$(just get-nodeport)/api/v1/"

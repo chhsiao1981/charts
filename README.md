@@ -33,3 +33,34 @@ Then, graceful tear down:
 just down
 just unkind
 ```
+
+### More Testing
+
+To run a _fs_ plugin:
+
+```shell
+just init
+just chrisomatic
+just test-fs
+```
+
+### Observability
+
+Optionally, logs can be collected using [Vector](https://vector.dev/)
+and visualized using [OpenObserve](https://openobserve.ai/).
+To run the observability stack and open the dashboard, run
+
+```shell
+just observe
+```
+
+Log in with the email `dev@babymri.org` password `chris1234`.
+
+Alternatively, you can get logs from the command-line using the `just olog [POD_NAME_LABEL]` command.
+Examples:
+
+```shell
+just olog pfcon
+
+just olog chris-heart
+```

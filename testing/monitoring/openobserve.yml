@@ -1,0 +1,96 @@
+# Based on: https://github.com/openobserve/openobserve/blob/main/deploy/k8s/statefulset.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: openobserve-nodeport
+  namespace: monitoring
+spec:
+  type: NodePort
+  selector:
+    app: openobserve
+  ports:
+  - name: http
+    port: 5080
+    targetPort: 5080
+    nodePort: 32020
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: openobserve
+  namespace: monitoring
+spec:
+  clusterIP: None
+  selector:
+    app: openobserve
+  ports:
+  - name: http
+    port: 5080
+    targetPort: 5080
+
+---
+
+# create statefulset
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openobserve
+  namespace: monitoring
+  labels:
+    name: openobserve
+spec:
+  serviceName: openobserve
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openobserve
+      app: openobserve
+  template:
+    metadata:
+      labels:
+        name: openobserve
+        app: openobserve
+    spec:
+      securityContext:
+        fsGroup: 2000
+        runAsUser: 10000
+        runAsGroup: 3000
+        runAsNonRoot: true
+      # terminationGracePeriodSeconds: 0
+      containers:
+        - name: openobserve
+          image: public.ecr.aws/zinclabs/openobserve:v0.6.4
+          env:
+            - name: ZO_ROOT_USER_EMAIL
+              value: dev@babymri.org
+            - name: ZO_ROOT_USER_PASSWORD
+              value: chris1234
+            - name: ZO_DATA_DIR
+              value: /data
+          # command: ["/bin/bash", "-c", "while true; do sleep 1; done"]
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 4096m
+              memory: 2048Mi
+            requests:
+              cpu: 256m
+              memory: 50Mi
+          ports:
+            - containerPort: 5080
+              name: http
+          volumeMounts:
+          - name: data
+            mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
