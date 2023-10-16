@@ -61,8 +61,14 @@ observe:
     helm repo add vector https://helm.vector.dev
     helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
     helm repo update vector metrics-server
-    helm upgrade --install --create-namespace -n monitoring -f monitoring/vector-values.yml vector vector/vector
     helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system
+    helm upgrade --install --create-namespace -n monitoring -f monitoring/vector-agent.yml vector-agent vector/vector
+
+    helm upgrade --install -n monitoring -f monitoring/vector-aggregator.yml vector-aggregator vector/vector
+    kubectl apply -f monitoring/metrics-reader.yml
+    helm upgrade --reuse-values -n monitoring vector-aggregator vector/vector \
+        --set customConfig.sources.cadvisor.auth.token="$(kubectl create token -n monitoring --duration=99999h vector-aggregator)" \
+        --set customConfig.sources.cadvisor.endpoints="$(./monitoring/_get_cadvisor_endpoints.sh)"
 
     kubectl apply -f monitoring/openobserve.yml
     kubectl rollout status -n monitoring statefulset openobserve
@@ -70,10 +76,10 @@ observe:
     xdg-open "http://localhost:32020/web/logs?stream=k8s&period=5m&refresh=0&sql_mode=false&query=a3ViZXJuZXRlc19wb2RfbmFtZXNwYWNlPSdrayc=&org_identifier=default"
 
 rm-observe:
-    kubectl delete -f monitoring/openobserve.yml; kubectl delete -n monitoring pvc -l app=openobserve
+    kubectl delete ns monitoring
 
 olog name:
-    ./get_openobserve_logs.sh '{{ name }}'
+    ./monitoring/_get_openobserve_logs.sh '{{ name }}'
 
 top:
     kubectl top -n kk pod --containers | grep -v POD | grep -v prometheus-proxy

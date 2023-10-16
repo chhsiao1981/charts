@@ -1,0 +1,36 @@
+# Collects metrics from Kubelet cAdvisor and sends the data to OpenObserve
+
+role: "Stateless-Aggregator"
+
+service:
+  enabled: false
+
+# customConfig -- Override Vector's default configs, if used **all** options need to be specified. This section supports
+# using helm templates to populate dynamic values. See Vector's [configuration documentation](https://vector.dev/docs/reference/configuration/)
+# for all options.
+customConfig:
+  data_dir: /vector-data-dir
+  api:
+    enabled: false
+  sources:
+    cadvisor:
+      type: prometheus_scrape
+      auth:
+        strategy: bearer
+        token: PLACEHOLDER
+      endpoints: [ "https://placeholder/metrics/cadvisor" ]
+      tls:
+        verify_certificate: false
+
+  sinks:
+    openobserve-metrics:
+      type: prometheus_remote_write
+      inputs:
+        - cadvisor
+      endpoint: http://openobserve-nodeport:5080/api/default/prometheus/api/v1/write
+      auth:
+        strategy: basic
+        user: dev@babymri.org
+        password: chris1234
+      healthcheck:
+        enabled: false

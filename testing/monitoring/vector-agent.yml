@@ -1,16 +1,6 @@
-# See default values for Vector by running
-#
-#     helm show values vector/vector
+# Collects Kubernetes logs and host metrics from each node and sends the data to OpenObserve
 
-# role -- [Role](https://vector.dev/docs/setup/deployment/roles/) for this Vector instance, valid options are:
-# "Agent", "Aggregator", and "Stateless-Aggregator".
-
-# Each role is created with the following workloads:
-# Agent = DaemonSet
-# Aggregator = StatefulSet
-# Stateless-Aggregator = Deployment
 role: "Agent"
-
 
 service:
   enabled: false
@@ -23,6 +13,11 @@ customConfig:
   api:
     enabled: false
   sources:
+    host_metrics:
+      type: host_metrics
+      filesystem:
+        devices:
+          excludes: [ "binfmt_misc" ]
     # https://vector.dev/docs/reference/configuration/sources/kubernetes_logs/
     kubernetes_logs:
       type: kubernetes_logs
@@ -75,20 +70,18 @@ customConfig:
         timestamp_format: rfc3339
       healthcheck:
         enabled: false
-
-      # https://github.com/vectordotdev/vector/issues/2710
-      # labels:
-      #   # Go template mustache bracket escape
-      #   # https://github.com/helm/helm/issues/2798#issuecomment-518207645
-      #   file: '{{ "{{" }} file {{ "}}" }}'
-      #   stream: '{{ "{{" }} stream {{ "}}" }}'
-      #   source_type: '{{ "{{" }} file {{ "}}" }}'
-      #   # https://vector.dev/docs/reference/configuration/sources/kubernetes_logs/#pod_annotation_fields
-      #   k8s_pod_namespace: '{{ "{{" }} kubernetes.pod_namespace {{ "}}" }}'
-      #   k8s_pod_name: '{{ "{{" }} kubernetes.pod_name {{ "}}" }}'
-      #   k8s_container_name: '{{ "{{" }} kubernetes.container_name {{ "}}" }}'
-      #   k8s_container_image: '{{ "{{" }} kubernetes.container_image {{ "}}" }}'
-      #   k8s_pod_label_app_kubernetes_io_name: '{{ "{{" }} kubernetes.pod_labels."app.kubernetes.io/name" {{ "}}" }}'
+    openobserve-metrics:
+      type: prometheus_remote_write
+      inputs:
+        - host_metrics
+        - rx_repack_metrics
+      endpoint: http://openobserve-nodeport:5080/api/default/prometheus/api/v1/write
+      auth:
+        strategy: basic
+        user: dev@babymri.org
+        password: chris1234
+      healthcheck:
+        enabled: false
 
 # Configuration for Vector's data persistence.
 persistence:
