@@ -5,18 +5,18 @@ cube:
     resources:
       requests:
         memory: 400Mi
-        cpu: 50m
+        cpu: 100m
   workerPeriodic:
     resources:
       requests:
         memory: 400Mi
-        cpu: 50m
+        cpu: 100m
   server:
     workers: 2
     resources:
       requests:
         memory: 512Mi
-        cpu: 200m
+        cpu: 100m
 
   ingress:
     nodePort: "32000"
@@ -40,20 +40,14 @@ pfcon:
 
   pfcon:
     resources:
-      limits:
-        cpu: 200m
-        memory: 1Gi
       requests:
-        cpu: 200m
-        memory: 384Mi
+        cpu: 100m
+        memory: 512Mi
 
   pman:
     # It is unnecessary to increase pman's resources to above the minimum because
     # pman doesn't do anything besides sending and receiving HTTP requests.
     resources:
-      limits:
-        cpu: 200m
-        memory: 1Gi
       requests:
-        cpu: 200m
+        cpu: 100m
         memory: 512Mi
