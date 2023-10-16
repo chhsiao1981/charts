@@ -5,12 +5,12 @@ cube:
     resources:
       requests:
         memory: 400Mi
-        cpu: 100m
+        cpu: 50m
   workerPeriodic:
     resources:
       requests:
         memory: 400Mi
-        cpu: 100m
+        cpu: 50m
   server:
     workers: 2
     resources:
@@ -26,13 +26,13 @@ postgresql:
     resources:
       requests:
         memory: 256Mi
-        cpu: 200m
+        cpu: 100m
 
 rabbitmq:
   resources:
     requests:
       memory: 256Mi
-      cpu: 200m
+      cpu: 100m
 
 pfcon:
   storage:
