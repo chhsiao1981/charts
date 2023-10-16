@@ -50,8 +50,10 @@ observe:
     [ -n "$(kubectl get ns -l kubernetes.io/metadata.name=monitoring -o name)" ] || kubectl create ns monitoring
 
     helm repo add vector https://helm.vector.dev
-    helm repo update vector
+    helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+    helm repo update vector metrics-server
     helm upgrade --install --create-namespace -n monitoring -f monitoring/vector-values.yml vector vector/vector
+    helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system
 
     kubectl apply -f monitoring/openobserve.yml
     kubectl rollout status -n monitoring statefulset openobserve
@@ -64,6 +66,8 @@ rm-observe:
 olog name:
     ./get_openobserve_logs.sh '{{ name }}'
 
+top:
+    kubectl top -n kk pod --containers | grep -v POD | grep -v prometheus-proxy
 
 # Helper Functions
 # --------------------------------------------------------------------------------
