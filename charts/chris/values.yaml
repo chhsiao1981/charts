@@ -245,6 +245,9 @@ pfcon:
         cpu: 500m
         memory: 384Mi
 
+    workers: 8
+    workerTimeout: 3600
+
     # pfcon configuration
     # Recommended to keep as-is
     config:
@@ -261,6 +264,9 @@ pfcon:
       requests:
         cpu: 200m
         memory: 512Mi
+
+    workers: 8
+    workerTimeout: 30
 
     # pman configuration
     # https://github.com/fnndsc/pman#environment-variables

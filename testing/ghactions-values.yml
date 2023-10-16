@@ -39,15 +39,17 @@ pfcon:
     size: 1Gi
 
   pfcon:
+    workers: 2
+    workerTimeout: 60
     resources:
       requests:
         cpu: 100m
-        memory: 512Mi
+        memory: 384Mi
 
   pman:
-    # It is unnecessary to increase pman's resources to above the minimum because
-    # pman doesn't do anything besides sending and receiving HTTP requests.
+    workers: 2
+    workerTimeout: 60
     resources:
       requests:
         cpu: 100m
-        memory: 512Mi
+        memory: 384Mi

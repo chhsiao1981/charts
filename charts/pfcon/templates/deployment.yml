@@ -30,6 +30,7 @@ spec:
         - name: pfcon
           image: "{{ .Values.pfcon.image.repository }}:{{ .Values.pfcon.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pfcon.image.pullPolicy }}
+          command: ["gunicorn", "--bind", "0.0.0.0:5005", "--workers", "{{ .Values.pfcon.workers }}", "--timeout", "{{ .Values.pfcon.workerTimeout }}", "pfcon.wsgi:application"]
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-pfcon
@@ -59,6 +60,7 @@ spec:
         - name: pman
           image: "{{ .Values.pman.image.repository }}:{{ .Values.pman.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.pman.image.pullPolicy }}
+          command: ["gunicorn", "--bind", "0.0.0.0:5010", "--workers", "{{ .Values.pman.workers }}", "--timeout", "{{ .Values.pman.workerTimeout }}", "pman.wsgi:application"]
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-pman

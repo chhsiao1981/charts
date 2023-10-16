@@ -48,6 +48,9 @@ pfcon:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  workers: 8
+  workerTimeout: 3600
+
   resources:
     limits:
       cpu: 500m
@@ -67,6 +70,9 @@ pman:
     repository: ghcr.io/fnndsc/pman
     pullPolicy: IfNotPresent
     tag: "6.0.1"
+
+  workers: 8
+  workerTimeout: 30
 
   # It is unnecessary to increase pman's resources to above the minimum because
   # pman doesn't do anything besides sending and receiving HTTP requests.
