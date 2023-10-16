@@ -44,10 +44,13 @@ jobs:
         fi
     - name: Run helm test
       run: |
-        set +e
+        set +ex
         helm test -n ghactions khris-test
         status=$?
+        kubectl logs -n ghactions khris-test-pfcon-test-connection
         kubectl logs -n ghactions khris-test-test-cube-works
+        kubectl get pod -n ghactions
+        kubectl describe pod -n ghactions
         exit $status
     - name: Run upgrade and set new admin password
       run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
@@ -77,10 +80,13 @@ jobs:
         fi
     - name: Run helm test again
       run: |
-        set +e
+        set +ex
         helm test -n ghactions khris-test
         status=$?
+        kubectl logs -n ghactions khris-test-pfcon-test-connection
         kubectl logs -n ghactions khris-test-test-cube-works
+        kubectl get pod -n ghactions
+        kubectl describe pod -n ghactions
         exit $status
     - name: Test NodePort access
       run: curl --fail-with-body http://localhost:32000/api/v1/
