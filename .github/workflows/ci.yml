@@ -14,9 +14,11 @@ jobs:
     name: Test chris
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         # N.B. `helm test` also tests subcharts for us
         pfconEnabled: [ 'true', 'false' ]
+
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
@@ -50,6 +52,9 @@ jobs:
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
+        if [ "${{ matrix.pfconEnabled }}" == 'true' ]; then
+          kubectl logs -n ghactions -l app.kubernetes.io/name=pfcon --all-containers
+        fi
         exit $status
     - name: Run upgrade and set new admin password
       run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
@@ -85,6 +90,9 @@ jobs:
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
+        if [ "${{ matrix.pfconEnabled }}" == 'true' ]; then
+          kubectl logs -n ghactions -l app.kubernetes.io/name=pfcon --all-containers
+        fi
         exit $status
     - name: Test NodePort access
       run: curl --fail-with-body http://localhost:32000/api/v1/
