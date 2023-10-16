@@ -12,7 +12,7 @@ unkind:
     kind delete cluster --name khris
 
 up:
-    helm upgrade --reuse-values --create-namespace --install \
+    helm upgrade --create-namespace --install \
         -n kk cacao ../charts/chris \
         --set cube.ingress.nodePort=32000 --set cube.ingress.nodePortHost=$(hostname)
 
