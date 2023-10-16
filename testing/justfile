@@ -36,6 +36,15 @@ test-fs:
 init:
     ./init.sh
 
+describe name:
+    kubectl describe -n kk pod -l app.kubernetes.io/name={{ name }}
+
+log name:
+    kubectl logs -n kk -l app.kubernetes.io/name={{ name }}
+
+loga name:
+    kubectl logs -n kk -l app.kubernetes.io/name={{ name }} --all-containers
+
 chrisomatic:
     [ -f chrisomatic.yml ] || just init
     docker run --rm -it \

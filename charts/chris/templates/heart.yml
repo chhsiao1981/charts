@@ -51,14 +51,21 @@ spec:
             - sh
             - -ec
             - |
-              {{- /* FQDN required, see https://github.com/FNNDSC/ChRIS_ultron_backEnd/issues/505 */}}
-              url="http://{{ include "pfcon.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.pfcon.service.port }}/api/v1/"
+              {{- /*
+              - FQDN required, see https://github.com/FNNDSC/ChRIS_ultron_backEnd/issues/505
+              - Name of pfcon service is brittle. I don't fully understand how subchart subtemplates are
+                accessed by the parent chart. The URL is probably wrong if .Values.pfcon.nameOverride
+                or .Values.pfcon.fullnameOverride is set.
+              - `manager.py add` does nothing if the cr already exists
+              - `manager.py modify` is called after `manager.py add` in case values are changed
+              */}}
+              url="http://{{ .Release.Name }}-pfcon.{{ .Release.Namespace }}.svc:{{ .Values.pfcon.service.port }}/api/v1/"
               name="{{ .Values.pfcon.name }}"
-              python plugins/services/manager.py add "$name" "$url" --user "$PFCON_USER" --password "$PFCON_PASSWORD" --description {{ .Values.pfcon.description | quote }} {{ if .Values.pfcon.pfcon.config.innetwork }}--innetwork {{ end }}
-
+              python plugins/services/manager.py add "$name" "$url" --user "$PFCON_USER" --password "$PFCON_PASSWORD" --description {{ .Values.pfcon.description | quote }} {{ if .Values.pfcon.pfcon.config.innetwork }}--innetwork{{ end }}
+              python plugins/services/manager.py modify "$name" --name "$name" --url "$url" --auth_url "${url}auth-token/" --user "$PFCON_USER" --password "$PFCON_PASSWORD" --description {{ .Values.pfcon.description | quote }} {{ if .Values.pfcon.pfcon.config.innetwork }}--innetwork{{ end }}
               plugins=({{ join " " .Values.cube.plugins }})
               for plugin_url in "${plugins[@]}"; do
-                echo python plugins/services/manager.py register "$name" --pluginurl "$plugin_url"
+                python plugins/services/manager.py register "$name" --pluginurl "$plugin_url"
               done
           {{- include "cube.container" . | nindent 10 }}
             - name: PFCON_USER
