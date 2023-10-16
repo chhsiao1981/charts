@@ -80,6 +80,14 @@ cube:
   # secrets:
   #   AUTH_LDAP_BIND_PASSWORD: "admin1234"
 
+  # Set of default plugins to register with the coupled pfcon (if .pfcon.enabled)
+  # Plugins which CUBE is hard-coded to depend on should be listed here.
+  # To add plugins for general use, see https://chrisproject.org/docs/tutorials/upload_plugin
+  plugins:
+    - https://cube.chrisproject.org/api/v1/plugins/65/ # pl-dircopy
+    - https://cube.chrisproject.org/api/v1/plugins/81/ # pl-tsdircopy
+    - https://cube.chrisproject.org/api/v1/plugins/10/ # pl-topologicalcopy
+
   # Ingress
   #####################
   ingress: {}
@@ -195,6 +203,9 @@ rabbitmq:
 
 pfcon:
   enabled: true
+
+  name: "innetwork"
+  description: "Kubernetes cluster compute resource"
 
   imagePullSecrets: []
   nameOverride: ""

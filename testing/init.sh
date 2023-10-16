@@ -11,15 +11,7 @@ on:
 
 cube:
   compute_resource:
-    - name: host
-      url: http://example.org/api/v1/
-      username: pfcon
-      password: pfcon1234
-      description: "Does not work"
-      innetwork: true
+    - name: $(just get-value .pfcon.name)
   plugins:
-    - pl-dircopy
-    - pl-tsdircopy
-    - pl-topologicalcopy
     - pl-mri10yr06mo01da_normal
 EOF

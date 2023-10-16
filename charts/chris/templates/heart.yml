@@ -45,6 +45,33 @@ spec:
         - name: migratedb
           command: ["python", "manage.py", "migrate", "--noinput"]
           {{- include "cube.container" . | nindent 10 }}
+        {{- if ".Values.pfcon.enabled" }}
+        - name: create-incluster-cr
+          command:
+            - sh
+            - -ec
+            - |
+              {{- /* FQDN required, see https://github.com/FNNDSC/ChRIS_ultron_backEnd/issues/505 */}}
+              url="http://{{ include "pfcon.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.pfcon.service.port }}/api/v1/"
+              name="{{ .Values.pfcon.name }}"
+              python plugins/services/manager.py add "$name" "$url" --user "$PFCON_USER" --password "$PFCON_PASSWORD" --description {{ .Values.pfcon.description | quote }} {{ if .Values.pfcon.pfcon.config.innetwork }}--innetwork {{ end }}
+
+              plugins=({{ join " " .Values.cube.plugins }})
+              for plugin_url in "${plugins[@]}"; do
+                echo python plugins/services/manager.py register "$name" --pluginurl "$plugin_url"
+              done
+          {{- include "cube.container" . | nindent 10 }}
+            - name: PFCON_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-pfcon
+                  key: PFCON_USER
+            - name: PFCON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-pfcon
+                  key: PFCON_PASSWORD
+        {{- end }}
         - name: create-superuser
           command:
           - python
