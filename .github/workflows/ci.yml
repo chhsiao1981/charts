@@ -119,6 +119,11 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Update Helm repos
+        run: |
+          helm repo add fnndsc https://fnndsc.github.io/charts
+          helm repo update
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
         env:
