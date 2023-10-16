@@ -45,7 +45,7 @@ spec:
         - name: migratedb
           command: ["python", "manage.py", "migrate", "--noinput"]
           {{- include "cube.container" . | nindent 10 }}
-        {{- if ".Values.pfcon.enabled" }}
+        {{- if .Values.pfcon.enabled }}
         - name: create-incluster-cr
           command:
             - sh
