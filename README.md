@@ -27,21 +27,17 @@ just wait
 just test
 ```
 
+Optionally, to use [_chrisomatic_](https://github.com/FNNDSC/chrisomatic):
+
+```shell
+just chrisomatic
+```
+
 Then, graceful tear down:
 
 ```shell
 just down
 just unkind
-```
-
-### More Testing
-
-To run a _fs_ plugin:
-
-```shell
-just init
-just chrisomatic
-just test-fs
 ```
 
 ### Observability
@@ -64,3 +60,12 @@ just olog pfcon
 
 just olog chris-heart
 ```
+
+## How It Works
+
+Two releases of Vector are made:
+
+- "Agent" mode which runs on every node to collect logs and host metrics
+- "Stateless-Aggregator" which scrapes Kubelet `/metrics/cadvisor`
+
+These logs and metrics are shipped to OpenObserve.
