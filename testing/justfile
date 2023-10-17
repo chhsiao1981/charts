@@ -60,7 +60,7 @@ observe:
     helm repo update vector metrics-server
     helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system
     helm upgrade --install --create-namespace -n monitoring -f monitoring/vector-agent.yml vector-agent vector/vector
-    helm upgrade --install -n monitoring -f monitoring/vector-aggregator.yml vector-aggregator vector/vectord
+    helm upgrade --install -n monitoring -f monitoring/vector-aggregator.yml vector-aggregator vector/vector
     kubectl apply -f monitoring/metrics-reader.yml
     helm upgrade --reuse-values -n monitoring vector-aggregator vector/vector \
         --set customConfig.sources.cadvisor.auth.token="$(kubectl create token -n monitoring --duration=99999h vector-aggregator)" \
