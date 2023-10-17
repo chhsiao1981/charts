@@ -1,9 +1,4 @@
 {{/*
-TODO
-Add validators to make sure that we aren't switching between having innetwork pfcon and not
-*/}}
-
-{{/*
 Expand the name of the chart.
 */}}
 {{- define "chris.name" -}}
@@ -95,7 +90,6 @@ CUBE container common properties
 {{- define "cube.container" -}}
 image: "{{ .Values.cube.image.repository }}:{{ .Values.cube.image.tag | default .Chart.AppVersion }}"
 imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
-serviceAccountName: {{ include "chris.serviceAccountName" . }}
 volumeMounts:
   - mountPath: /data
     name: file-storage
@@ -118,6 +112,7 @@ env:
 
 
 {{- define "cube.pod" -}}
+serviceAccountName: {{ include "chris.serviceAccountName" . }}
 volumes:
   - name: file-storage
     persistentVolumeClaim:
