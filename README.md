@@ -19,6 +19,9 @@ You should install `just`: https://github.com/casey/just#installation
 Then you can run things like:
 
 ```shell
+git switch dev
+helm dependency update ./charts/chris
+
 cd testing
 
 just kind
@@ -39,6 +42,29 @@ Then, graceful tear down:
 just down
 just unkind
 ```
+
+### Making Modifications
+
+Editing _pfcon_'s templates can be tricky because it's a dependency from the same repo as _chris_.
+Here's a workaround:
+
+```shell
+cd charts/chris/charts
+rm ./pfcon-*.tgz
+ln -sv ../../pfcon
+```
+
+To publish your changes, increase `version` in `charts/pfcon/Chart.yaml` then merge the `dev`
+branch into `master`. Once the release is created by GitHub Actions, increase the `version` and
+_pfcon_ dependency version in `charts/chris/Chart.yaml` then update `charts/chris/Chart.lock` by running
+
+```shell
+cd charts/chris
+rm charts/pfcon
+helm dependency update .
+```
+
+Finally, push to master once more.
 
 ### Observability
 
