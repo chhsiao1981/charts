@@ -1,4 +1,9 @@
 {{/*
+TODO
+Add validators to make sure that we aren't switching between having innetwork pfcon and not
+*/}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "chris.name" -}}
@@ -66,9 +71,9 @@ its own PVC.
 */}}
 {{- define "cube.shouldCreateVolume" -}}
 {{- if (and .Values.pfcon.enabled .Values.pfcon.pfcon.config.innetwork) -}}
-false
+{{- /* no (empty value) */ -}}
 {{- else -}}
-true
+yes
 {{- end }}
 {{- end }}
 
