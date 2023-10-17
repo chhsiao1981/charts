@@ -7,6 +7,6 @@ dependencies:
   version: 12.1.7
 - name: pfcon
   repository: https://fnndsc.github.io/charts
-  version: 0.0.3
-digest: sha256:94066cc0ea4a5ab9d9af9629632e7f3baccd52ad80b95547a446064c232e742b
-generated: "2023-10-16T00:26:30.85784414-04:00"
+  version: 0.0.2
+digest: sha256:0ac836c28734704115695a73eac3d87c71e34d00fabcab07b42b43b4c6df5d04
+generated: "2023-10-17T13:12:20.08876128-04:00"
