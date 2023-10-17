@@ -65,9 +65,8 @@ spec:
 
           if __name__ == '__main__':
               status = asyncio.run(main())
-              # disabled check -- re-enable after pfcon chart dependency is updated
-              #if status != Status.finishedSuccessfully:
-              #    sys.exit(1)
+              if status != Status.finishedSuccessfully:
+                  sys.exit(1)
 
       resources:
         requests:

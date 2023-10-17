@@ -83,8 +83,6 @@ jobs:
           exit 1
         fi
     - name: Run helm test again
-      # temporarily disabled so that pfcon can get released even though CUBE does not work
-      if: matrix.pfconEnabled == 'false'
       run: |
         set +ex
         helm test -n ghactions khris-test
