@@ -33,6 +33,6 @@ dependencies:
   version: "~12.1.7"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: pfcon
-  version: ">= 0.0.3, < 0.1.0"
+  version: ">= 0.0.2, < 0.1.0"
   repository: "https://fnndsc.github.io/charts"
   condition: pfcon.enabled
