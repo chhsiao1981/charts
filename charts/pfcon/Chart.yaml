@@ -7,7 +7,7 @@ sources:
 - https://github.com/FNNDSC/pfcon
 
 type: application
-version: "0.1.0"
+version: "0.1.0-rc.1"
 appVersion: "5.2.2"
 
 maintainers:
