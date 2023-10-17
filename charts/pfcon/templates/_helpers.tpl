@@ -55,11 +55,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "pfcon.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
 {{- default (include "pfcon.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
 {{- end }}
 
 {{- define "pfcon.storebase" -}}

@@ -206,22 +206,7 @@ pfcon:
 
   name: "innetwork"
   description: "Kubernetes cluster compute resource"
-
-  imagePullSecrets: []
-  nameOverride: ""
-  fullnameOverride: ""
-
-  serviceAccount:
-    # Specifies whether a service account should be created
-    create: true
-    # Annotations to add to the service account
-    annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
-    name: ""
-
   replicaCount: 1
-
   podAnnotations: {}
 
   service:
@@ -245,7 +230,7 @@ pfcon:
         cpu: 500m
         memory: 384Mi
 
-    workers: 8
+    workers: 4
     workerTimeout: 3600
 
     # pfcon configuration
@@ -265,7 +250,7 @@ pfcon:
         cpu: 200m
         memory: 512Mi
 
-    workers: 8
+    workers: 4
     workerTimeout: 30
 
     # pman configuration

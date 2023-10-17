@@ -8,6 +8,7 @@ metadata:
 data:
   CONTAINER_ENV: kubernetes
   STORAGE_TYPE: kubernetes_pvc
+  JOB_NAMESPACE: {{ .Release.Namespace }}
   VOLUME_NAME: {{ include "pfcon.storebase" . }}
   {{- toYaml .Values.pman.config | nindent 2 }}
   {{- if .Values.global.podSecurityContext }}
