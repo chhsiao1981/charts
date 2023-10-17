@@ -104,7 +104,7 @@ jobs:
         output="$(helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set pfcon.enabled=false)"
         rc=$?
         echo "$output"
-        if [ "$rc" != '0' ]; then
+        if [ "$rc" = '0' ]; then
           echo "::error ::Expected command to fail but it didn't"
           exit $rc
         elif ! [[ "$output" = *"$expected"* ]]; then
@@ -119,7 +119,7 @@ jobs:
           output="$(helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set pfcon.enabled=true)"
           rc=$?
           echo "$output"
-          if [ "$rc" != '0' ]; then
+          if [ "$rc" = '0' ]; then
             echo "::error ::Expected command to fail but it didn't"
             exit $rc
           elif ! [[ "$output" = *"$expected"* ]]; then
