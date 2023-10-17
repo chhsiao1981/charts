@@ -64,6 +64,7 @@ the volume managed by the pfcon subchart for file storage.
 If pfcon is not enabled or not configured as "innetwork" then CUBE needs to create
 its own PVC.
 */}}
+
 {{- define "cube.shouldCreateVolume" -}}
 {{- if (and .Values.pfcon.enabled .Values.pfcon.pfcon.config.innetwork) -}}
 {{- /* no (empty value) */ -}}
@@ -72,8 +73,25 @@ yes
 {{- end }}
 {{- end }}
 
+{{- define "cube.usingOwnVolume" -}}
+{{- with (lookup "v1" "PersistentVolumeClaim" .Release.Namespace ( print .Release.Name "-cube-files")) -}}
+yes
+{{- end -}}
+{{- end -}}
+
 {{- define "cube.filesVolume" -}}
-{{- if (include "cube.shouldCreateVolume" .) -}}
+{{- /*
+      Validators to check that you aren't self-destructive.
+
+      You should never:
+      - enable "innetwork pfcon" where previously it wasn't
+      - disable "innetwork pfcon" where it previously was
+*/ -}}
+{{- if      (and .Release.IsUpgrade (eq "yes" (include "cube.usingOwnVolume" .)) (ne "yes" (include "cube.shouldCreateVolume" .)))  -}}
+{{- fail "CUBE is currently using its own volume, so you cannot set .pfcon.enabled=true or .pfcon.pfcon.config.innetwork=true now!" -}}
+{{- else if (and .Release.IsUpgrade (ne "yes" (include "cube.usingOwnVolume" .)) (eq "yes" (include "cube.shouldCreateVolume" .)))  -}}
+{{- fail "CUBE currently depends on pfcon configured in \"innetwork\" mode for its storage, volume, so you cannot set .pfcon.enabled=false or .pfcon.pfcon.config.innetwork=false now!" -}}
+{{- else if (include "cube.shouldCreateVolume" .) -}}
 {{- /* will be created by ./storage.yml */ -}}
 {{ .Release.Name }}-cube-files
 {{- else -}}
