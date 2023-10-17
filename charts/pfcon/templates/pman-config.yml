@@ -13,4 +13,6 @@ data:
   {{- toYaml .Values.pman.config | nindent 2 }}
   {{- if .Values.global.podSecurityContext }}
   CONTAINER_USER: "{{ .Values.global.podSecurityContext.runAsUser }}:{{ .Values.global.podSecurityContext.runAsGroup }}"
+  {{- else }}
+  CONTAINER_USER: "1001:0"  # default user of fnndsc/cube's base image
   {{- end }}
