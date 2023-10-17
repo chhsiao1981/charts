@@ -95,6 +95,7 @@ CUBE container common properties
 {{- define "cube.container" -}}
 image: "{{ .Values.cube.image.repository }}:{{ .Values.cube.image.tag | default .Chart.AppVersion }}"
 imagePullPolicy: {{ .Values.cube.image.pullPolicy }}
+serviceAccountName: {{ include "chris.serviceAccountName" . }}
 volumeMounts:
   - mountPath: /data
     name: file-storage
