@@ -144,8 +144,8 @@ spec:
               memory: 384Mi
               cpu: 200m
             limits:
-              memory: 512Mi
-              cpu: 200m
+              memory: 1Gi
+              cpu: 1000m
           livenessProbe:
             httpGet:
               path: /api/v1/users/

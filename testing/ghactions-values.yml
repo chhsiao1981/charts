@@ -16,7 +16,7 @@ cube:
     resources:
       requests:
         memory: 512Mi
-        cpu: 100m
+        cpu: 200m
 
   ingress:
     nodePort: "32000"
