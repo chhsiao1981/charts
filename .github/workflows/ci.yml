@@ -22,8 +22,15 @@ jobs:
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
-    - name: Start Kubernetes
-      run: kind create cluster --config=testing/kind-with-nodeport.yml
+    - name: Set up Kubernetes with OpenObserve
+      uses: FNNDSC/kind-openobserve-action@v1
+      with:
+        openobserve_endpoint: ${{ secrets.OPENOBSERVE_URL }}/api/default/
+        openobserve_username: ${{ secrets.OPENOBSERVE_USERNAME }}
+        openobserve_password: ${{ secrets.OPENOBSERVE_PASSWORD }}
+        openobserve_stream: charts-chris-pfconEnabled-${{ matrix.pfconEnabled }}
+        kind_config: ./testing/kind-with-nodeport.yml
+        wait_until_ready: false
     - name: Update Helm dependencies
       run: helm dependency update ./charts/chris
     - name: Install chris
@@ -52,9 +59,6 @@ jobs:
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
-        if [ "${{ matrix.pfconEnabled }}" == 'true' ]; then
-          kubectl logs -n ghactions -l app.kubernetes.io/name=pfcon --all-containers
-        fi
         exit $status
     - name: Run upgrade and set new admin password
       run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
@@ -90,9 +94,6 @@ jobs:
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
-        if [ "${{ matrix.pfconEnabled }}" == 'true' ]; then
-          kubectl logs -n ghactions -l app.kubernetes.io/name=pfcon --all-containers
-        fi
         exit $status
     - name: Test NodePort access
       run: curl --fail-with-body http://localhost:32000/api/v1/
@@ -130,9 +131,8 @@ jobs:
       run: helm uninstall -n ghactions khris-test
     - name: Delete namespace
       run: kubectl delete namespace ghactions
-    - name: Delete cluster
-      run: kind delete cluster
-  
+
+
   # https://helm.sh/docs/howto/chart_releaser_action/
   release:
     needs: [ test-chris ]
