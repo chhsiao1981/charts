@@ -45,8 +45,9 @@ spec:
             httpGet:
               path: /api/v1/users/
               port: http
-            initialDelaySeconds: 3
-            periodSeconds: 3
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
 
       {{- include "cube.pod" . | nindent 6 }}
       {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
