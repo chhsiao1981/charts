@@ -160,7 +160,7 @@ affinity:
 # should start after the server. It's ok for ancillary services to be started late.
 {{- define "cube.waitServerReady" -}}
 - name: wait-for-server
-  image: busybox
+  image: quay.io/prometheus/busybox:latest
   command: ["/bin/sh", "-c"]
   args: ["until wget --spider 'http://{{ .Release.Name }}-heart:8000/api/v1/users/'; do sleep 5; done"]
 {{- end }}
