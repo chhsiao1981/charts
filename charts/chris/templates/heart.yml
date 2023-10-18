@@ -155,6 +155,10 @@ spec:
             timeoutSeconds: 5
 
       {{- include "cube.pod" . | nindent 6 }}
+      {{- /* podAffinityWorkaround is needed only if using pfcon's volume */}}
+      {{- if (not (include "cube.useOwnVolume" .)) }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
+      {{- end }}
 
 ---
 
