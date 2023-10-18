@@ -86,6 +86,8 @@ jobs:
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
+    - name: Wait for RabbitMQ to finish restarting
+      run: kubectl rollout status statefulset -n ghactions -l app.kubernetes.io/name=rabbitmq
     - name: Run helm test again
       run: |
         set +ex
