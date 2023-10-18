@@ -1,4 +1,4 @@
-{{- if (include "cube.shouldCreateVolume" .) -}}
+{{- if (include "cube.useOwnVolume" .) -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

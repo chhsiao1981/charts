@@ -65,7 +65,7 @@ If pfcon is not enabled or not configured as "innetwork" then CUBE needs to crea
 its own PVC.
 */}}
 
-{{- define "cube.shouldCreateVolume" -}}
+{{- define "cube.useOwnVolume" -}}
 {{- if (and .Values.pfcon.enabled .Values.pfcon.pfcon.config.innetwork) -}}
 {{- /* no (empty value) */ -}}
 {{- else -}}
@@ -73,7 +73,7 @@ yes
 {{- end }}
 {{- end }}
 
-{{- define "cube.usingOwnVolume" -}}
+{{- define "cube.wasUsingOwnVolume" -}}
 {{- with (lookup "v1" "PersistentVolumeClaim" .Release.Namespace ( print .Release.Name "-cube-files")) -}}
 yes
 {{- end -}}
@@ -87,11 +87,11 @@ yes
       - enable "innetwork pfcon" where previously it wasn't
       - disable "innetwork pfcon" where it previously was
 */ -}}
-{{- if      (and .Release.IsUpgrade (eq "yes" (include "cube.usingOwnVolume" .)) (ne "yes" (include "cube.shouldCreateVolume" .)))  -}}
+{{- if      (and .Release.IsUpgrade (eq "yes" (include "cube.wasUsingOwnVolume" .)) (ne "yes" (include "cube.useOwnVolume" .)))  -}}
 {{- fail "CUBE is currently using its own volume, so you cannot set .pfcon.enabled=true or .pfcon.pfcon.config.innetwork=true now!" -}}
-{{- else if (and .Release.IsUpgrade (ne "yes" (include "cube.usingOwnVolume" .)) (eq "yes" (include "cube.shouldCreateVolume" .)))  -}}
+{{- else if (and .Release.IsUpgrade (ne "yes" (include "cube.wasUsingOwnVolume" .)) (eq "yes" (include "cube.useOwnVolume" .)))  -}}
 {{- fail "CUBE currently depends on pfcon configured in \"innetwork\" mode for its storage, volume, so you cannot set .pfcon.enabled=false or .pfcon.pfcon.config.innetwork=false now!" -}}
-{{- else if (include "cube.shouldCreateVolume" .) -}}
+{{- else if (include "cube.useOwnVolume" .) -}}
 {{- /* will be created by ./storage.yml */ -}}
 {{ .Release.Name }}-cube-files
 {{- else -}}
@@ -148,10 +148,22 @@ affinity:
     requiredDuringSchedulingIgnoredDuringExecution:
     - labelSelector:
         matchExpressions:
+        {{- /* if CUBE is using its own volume, pods should be attracted to heart. Otherwise, pods should be attracted to pfcon. */}}
+        {{- if (include "cube.useOwnVolume" .) }}
         - key: app.kubernetes.io/instance
           operator: In
           values:
           - {{ .Release.Name }}-heart
+        {{- else }}
+        - key: app.kubernetes.io/instance
+          operator: In
+          values:
+          - {{ .Release.Name }}
+        - key: app.kubernetes.io/name
+          operator: In
+          values:
+          - pfcon
+        {{- end }}
       topologyKey: kubernetes.io/hostname
 {{- end }}
 {{- end }}
