@@ -4,8 +4,8 @@ metadata:
   name: "{{ .Release.Name }}-test-cube-works"
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: "{{ include "chris.name" . }}-test-cube-works"
-    app.kubernetes.io/instance: "{{ .Release.Name }}-test-cube-works"
+    helm.sh/chart: {{ include "chris.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     "helm.sh/hook": test
     "kubernetes.io/description": "Test the ChRIS backend by creating a test user, logging in, and uploading a file."

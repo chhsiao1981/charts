@@ -4,7 +4,8 @@ metadata:
   name: "{{ include "pfcon.fullname" . }}-test-connection"
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "pfcon.labels" . | nindent 4 }}
+    helm.sh/chart: {{ include "pfcon.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     "helm.sh/hook": test
 spec:
