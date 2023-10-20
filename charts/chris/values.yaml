@@ -54,8 +54,6 @@ cube:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  podAnnotations: {}
-
   # Use inter-pod affinity as a workaround for using a ReadWriteOnce PersistentVolumeClaim
   enablePodAffinityWorkaround: false
 
