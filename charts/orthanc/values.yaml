@@ -1,0 +1,145 @@
+# Default values for orthanc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: docker.io/jodogne/orthanc-plugins
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+global: {}
+  # storageClass:
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+terminationGracePeriodSeconds: 10
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8042
+
+dicomService:
+  enabled: true
+  type: ClusterIP
+  port: 4242
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+config:
+  # The logical name of this instance of Orthanc. This one is
+  # displayed in Orthanc Explorer and at the URI "/system".
+  name: "Orthanc"
+  # Enable the transparent compression of the DICOM instances
+  storageCompression: false
+  # Action to take when the maximum storage is reached.
+  # By default, the patients are recycled ("Recycle" mode).
+  # In "Reject" mode, the sender will receive a 0xA700 DIMSE status code
+  # if the instance was sent through C-Store, a 507 HTTP status code
+  # if using the REST API and a 0xA700 Failure reason when using
+  # DicomWeb Stow-RS 
+  # Allowed values: "Recycle", "Reject"
+  # (new in Orthanc 1.11.2)
+  maximumStorageMode: Reject
+  # Maximum size of the storage cache in MB.  The storage cache
+  # is stored in RAM and contains a copy of recently accessed
+  # files (written or read).  A value of "0" indicates the cache
+  # is disabled.  (new in Orthanc 1.10.0)
+  maximumStorageCacheSize: 0
+
+  # The DICOM Application Entity Title
+  dicomAet: "ORTHANC"
+  # Check whether the called AET corresponds during a DICOM request
+  dicomCheckCalledAet: false
+
+  # The default encoding that is assumed for DICOM files without
+  # "SpecificCharacterSet" DICOM tag, and that is used when answering
+  # C-Find requests (including worklists). The allowed values are
+  # "Ascii", "Utf8", "Latin1", "Latin2", "Latin3", "Latin4",
+  # "Latin5", "Cyrillic", "Windows1251", "Arabic", "Greek", "Hebrew",
+  # "Thai", "Japanese", and "Chinese".
+  defaultEncoding: "Latin1"
+
+  # Set the timeout (in seconds) after which the DICOM associations
+  # are closed by the Orthanc SCP (server) if no further DIMSE
+  # command is received from the SCU (client).
+  dicomScpTimeout: 30
+
+  # The timeout (in seconds) after which the DICOM associations are
+  # considered as closed by the Orthanc SCU (client) if the remote
+  # DICOM SCP (server) does not answer.
+  dicomScuTimeout: 10
+
+  # Whether or not the password protection is enabled
+  AuthenticationEnabled: true
+
+  # The list of the registered users. Because Orthanc uses HTTP
+  # Basic Authentication, the passwords are stored as plain text.
+  registeredUsers:
+    orthanc: orthanc
+  
+  # The list of the known DICOM modalities
+  #
+  # A fourth parameter is available to enable patches for a
+  # specific PACS manufacturer. The allowed values are currently
+  # "Generic" (default value), "StoreScp" (storescp tool from
+  # DCMTK), "ClearCanvas", "MedInria", "Dcm4Chee", "SyngoVia",
+  # "AgfaImpax" (Agfa IMPAX), "EFilm2" (eFilm version 2), and
+  # "Vitrea". This parameter is case-sensitive.
+  dicomModalities: {}
+    # "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
+
+  # Whether Orthanc monitors its metrics (new in Orthanc 1.5.4). If
+  # set to "true", the metrics can be retrieved at
+  # "/tools/metrics-prometheus" formetted using the Prometheus
+  # text-based exposition format.
+  metricsEnabled: true
+
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+persistence:
+  storage:
+    size: 1Gi
+    # storageClass: my-storage-class
+    accessModes: [ ReadWriteOnce ]
+  index:
+    size: 1Gi
+    # storageClass: my-storage-class
+    accessModes: [ ReadWriteOnce ]

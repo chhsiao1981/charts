@@ -1,0 +1,17 @@
+apiVersion: v2
+name: orthanc
+description: Orthanc PACS server
+
+sources:
+- https://github.com/FNNDSC/charts
+- https://github.com/FNNDSC/orthanc-fnndsc
+- https://hub.docker.com/r/jodogne/orthanc-plugins
+
+type: application
+version: "1.0.0-rc.1"
+appVersion: "1.12.1"
+
+maintainers:
+- name: The FNNDSC Dev Team
+  email: dev@babyMRI.org
+  url: https://fnndsc.org

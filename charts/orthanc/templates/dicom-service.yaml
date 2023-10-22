@@ -1,0 +1,18 @@
+{{- if .Values.dicomService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "orthanc.fullname" . }}-dicom
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "orthanc.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: dicom
+      protocol: TCP
+      name: dicom
+  selector:
+    {{- include "orthanc.selectorLabels" . | nindent 4 }}
+{{- end }}
