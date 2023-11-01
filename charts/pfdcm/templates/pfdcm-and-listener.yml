@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pfdcm.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pfdcm.pfdcmLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pfdcm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.pfdcm.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pfdcm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: pfdcm
+          image: "{{ .Values.pfdcm.image.repository }}:{{ .Values.pfdcm.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pfdcm.image.pullPolicy }}
+          env:
+            - name: MAX_WORKERS
+              value: "{{ .Values.pfdcm.maxWorkers }}"
+            - name: PORT
+              value: "{{ .Values.pfdcm.service.port }}"
+          volumeMounts:
+            - mountPath: /home/dicom
+              name: data
+            - mountPath: /home/dicom/services
+              name: config
+          ports:
+            - name: http
+              containerPort: {{ .Values.pfdcm.service.port }}
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /api/v1/health/
+          #     port: http
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 3
+          resources:
+            {{- toYaml .Values.pfdcm.resources | nindent 12 }}
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pypx
+        - name: config
+          secret:
+            secretName: {{ .Release.Name }}-pfdcm-services
+            optional: false
