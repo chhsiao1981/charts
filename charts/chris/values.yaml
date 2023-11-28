@@ -57,6 +57,9 @@ cube:
   # Use inter-pod affinity as a workaround for using a ReadWriteOnce PersistentVolumeClaim
   enablePodAffinityWorkaround: false
 
+  # Prefix to use for job names submitted to Kubernetes. Ideally, this should be unique for each CUBE instance.
+  # jobPrefix: ""
+
   # Configuration
   #####################
   config:
