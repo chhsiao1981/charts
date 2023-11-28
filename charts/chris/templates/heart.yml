@@ -79,7 +79,7 @@ spec:
                   name: {{ .Release.Name }}-pfcon
                   key: PFCON_PASSWORD
         {{- end }}
-        - name: create-superuser
+        - name: set-config
           command:
           - python
           - manage.py
@@ -87,7 +87,12 @@ spec:
           - -c
           - |
             import os
+            from core.models import ChrisInstance
             from django.contrib.auth.models import User
+
+            chris_instance = ChrisInstance.load()
+            chris_instance.job_id_prefix = {{ .Values.cube.jobPrefix | default (printf "%s-jid-" .Release.Name) | quote }}
+            chris_instance.save()
 
             user_config = {
                 'username': os.environ['CHRIS_SUPERUSER_USERNAME'],

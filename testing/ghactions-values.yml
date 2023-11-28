@@ -31,7 +31,7 @@ postgresql:
 rabbitmq:
   resources:
     requests:
-      memory: 256Mi
+      memory: 384Mi
       cpu: 100m
 
 pfcon:
