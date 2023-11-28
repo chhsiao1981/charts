@@ -88,6 +88,8 @@ jobs:
         fi
     - name: Wait for RabbitMQ to finish restarting
       run: kubectl rollout status statefulset -n ghactions -l app.kubernetes.io/name=rabbitmq
+    - name: What are my pods doing?
+      run: kubectl get pods -n ghactions
     - name: Run helm test again
       run: |
         set +ex
