@@ -5,7 +5,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
-    app.kubernetes.io/instance: {{ .Release.Name }}-server
     {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "ChRIS backend server"
@@ -14,7 +13,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "chris.name" . }}-server
-      app.kubernetes.io/instance: {{ .Release.Name }}-server
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       name: {{ .Release.Name }}-server
@@ -24,7 +23,7 @@ spec:
       {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "chris.name" . }}-server
-        app.kubernetes.io/instance: {{ .Release.Name }}-server
+        {{- include "cube.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -61,13 +60,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
-    app.kubernetes.io/instance: {{ .Release.Name }}-server
     {{- include "cube.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   selector:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
-    app.kubernetes.io/instance: {{ .Release.Name }}-server
   ports:
     - name: http
       protocol: TCP

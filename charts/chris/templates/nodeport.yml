@@ -7,7 +7,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "chris.name" . }}-api-nodeport
-    app.kubernetes.io/instance: {{ .Release.Name }}-api-nodeport
     {{- include "cube.labels" . | nindent 4 }}
 spec:
   type: NodePort
@@ -19,5 +18,5 @@ spec:
       nodePort: {{ .Values.cube.ingress.nodePort }}
   selector:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
-    app.kubernetes.io/instance: {{ .Release.Name }}-server
+    app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
