@@ -51,18 +51,22 @@ jobs:
           exit 1
         fi
 
-      # plinst 1 change from status=scheduled to status=started doesn't get saved to DB, don't know why
-    - name: FIXME sleep to wait for database to work
-      if: matrix.pfconEnabled == 'true'
-      run: sleep 30
     - name: Run helm test
       run: |
         set +ex
         helm test -n ghactions khris-test
         status=$?
+        if [ "$status" != '0' ]; then
+          echo "::warning ::First attempt failed, see https://github.com/FNNDSC/charts/issues/6"
+          echo "trying again..."
+          kubectl delete -n ghactions pod khris-test-test-cube-works
+          helm test -n ghactions khris-test
+          status=$?
+        fi
         kubectl logs -n ghactions khris-test-test-cube-works
         kubectl get pod -n ghactions
         kubectl describe pod -n ghactions
+        kubectl exec -n ghactions $(kubectl get statefulset -n ghactions -l app.kubernetes.io/name=postgresql -o name) -i -- sh -c 'psql "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$POSTGRESQL_PORT_NUMBER/$POSTGRES_DATABASE"' <<< 'select * from plugininstances_plugininstance'
         exit $status
     - name: Run upgrade and set new admin password
       run: helm upgrade -n ghactions khris-test ./charts/chris --reuse-values --set chris_admin.password="newpassword1234"
