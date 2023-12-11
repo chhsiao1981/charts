@@ -43,6 +43,9 @@ jobs:
     - name: Wait for server pod to be ready
       run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=chris-server --timeout=300s
 
+    - name: 'Debug: see what pods are running'
+      run: kubectl get pods -n ghactions
+
     - name: Assert superuser created
       run: |
         actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-heart -c set-config)"
