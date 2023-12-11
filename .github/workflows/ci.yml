@@ -50,10 +50,14 @@ jobs:
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
+
+      # plinst 1 change from status=scheduled to status=started doesn't get saved to DB, don't know why
+    - name: FIXME sleep to wait for database to work
+      if: matrix.pfconEnabled == 'true'
+      run: sleep 30
     - name: Run helm test
       run: |
         set +ex
-        sleep 20  # FIXME: pinst 1 change from status=scheduled to status=started doesn't get saved to DB
         helm test -n ghactions khris-test
         status=$?
         kubectl logs -n ghactions khris-test-test-cube-works
