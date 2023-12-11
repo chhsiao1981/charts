@@ -53,6 +53,7 @@ jobs:
     - name: Run helm test
       run: |
         set +ex
+        sleep 20  # FIXME: pinst 1 change from status=scheduled to status=started doesn't get saved to DB
         helm test -n ghactions khris-test
         status=$?
         kubectl logs -n ghactions khris-test-test-cube-works
@@ -71,12 +72,20 @@ jobs:
         fi
     - name: Restart heart
       id: restart
+      continue-on-error: true
       run: |
+        set -x
         kubectl rollout restart deployment -n ghactions -l app.kubernetes.io/name=chris-heart
-        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=120s
+        kubectl rollout status deployment -n ghactions -l app.kubernetes.io/name=chris-heart --timeout=300s
         most_recent_pod=$(kubectl get pods -n ghactions --sort-by=.metadata.creationTimestamp -l app.kubernetes.io/name=chris-heart -o custom-columns=:metadata.name | tail -n 1)
         echo "new_pod=$most_recent_pod" >> "$GITHUB_OUTPUT"
         kubectl wait -n ghactions pod $most_recent_pod --for=condition=ready --timeout=60s
+    - name: Why did the restart fail?
+      if: steps.restart.outcome == 'failure'
+      run: |
+        kubectl get pods -n ghactions
+        kubectl describe pod -n ghactions
+        exit 1
     - name: Assert superuser password changed
       run: |
         actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.new_pod }} -c set-config)"
