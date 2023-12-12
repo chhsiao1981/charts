@@ -6,7 +6,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
-    app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
     {{- include "cube.labels" . | nindent 4 }}
   annotations:
     kubernetes.io/description: "ChRIS backend periodic tasks"
@@ -15,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
-      app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       name: {{ .Release.Name }}-worker-mains
@@ -26,7 +25,7 @@ spec:
       {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "chris.name" . }}-worker-mains
-        app.kubernetes.io/instance: {{ .Release.Name }}-worker-mains
+        {{- include "cube.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

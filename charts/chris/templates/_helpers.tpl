@@ -41,6 +41,7 @@ app.kubernetes.io/part-of: chris
 
 {{- define "cube.labels" -}}
 {{ include "chris.labels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/component: backend
 {{- end }}
@@ -148,22 +149,15 @@ affinity:
     requiredDuringSchedulingIgnoredDuringExecution:
     - labelSelector:
         matchExpressions:
-        {{- /* if CUBE is using its own volume, pods should be attracted to heart. Otherwise, pods should be attracted to pfcon. */}}
-        {{- if (include "cube.useOwnVolume" .) }}
-        - key: app.kubernetes.io/instance
-          operator: In
-          values:
-          - {{ .Release.Name }}-heart
-        {{- else }}
         - key: app.kubernetes.io/instance
           operator: In
           values:
           - {{ .Release.Name }}
+        {{- /* if CUBE is using its own volume, pods should be attracted to heart. Otherwise, pods should be attracted to pfcon. */}}
         - key: app.kubernetes.io/name
           operator: In
           values:
-          - pfcon
-        {{- end }}
+          - {{ if (include "cube.useOwnVolume" .) }}{{ .Release.Name }}{{ else }}pfcon{{ end }}
       topologyKey: kubernetes.io/hostname
 {{- end }}
 {{- end }}

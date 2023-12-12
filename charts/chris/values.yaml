@@ -58,6 +58,7 @@ cube:
   enablePodAffinityWorkaround: false
 
   # Prefix to use for job names submitted to Kubernetes. Ideally, this should be unique for each CUBE instance.
+  # The default behavior is to use the release name as the job prefix.
   # jobPrefix: ""
 
   # Configuration
@@ -166,6 +167,13 @@ postgresql:
       requests:
         memory: 1Gi
         cpu: 1
+      limits:
+        memory: 1Gi
+        cpu: 1
+
+    persistence:
+      enabled: true
+      size: 8Gi
 
     # Defer control of security configurations to OpenShift
     podSecurityContext:
@@ -192,6 +200,7 @@ rabbitmq:
     password: "chris1234"
 
   persistence:
+    enabled: true
     size: 1Gi
 
   # Defer control of security configurations to OpenShift
