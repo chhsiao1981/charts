@@ -1,0 +1,22 @@
+{{- if .Values.pfdcm.nodePort.enabled }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pfdcm-nodeport
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-pfdcm-nodeport
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "pfdcm.commonLabels" . | nindent 4 }}
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.pfdcm.service.port }}
+      targetPort: {{ .Values.pfdcm.service.port }}
+      nodePort: {{ .Values.pfdcm.nodePort.nodePort }}
+  selector:
+    {{- include "pfdcm.selectorLabels" . | nindent 4 }}
+{{- end }}
