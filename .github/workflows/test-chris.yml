@@ -1,23 +1,23 @@
-name: ci
+name: Test ChRIS and pfcon
 
 on:
-  push:
-    branches: [ master, dev ]
-    paths:
-      - '.github/workflows/**'
-      - 'charts/**'
-      - 'testing/**'
   pull_request:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/test-chris.yml'
+      - 'charts/chris/**'
+      - 'charts/pfcon/**'
+      - 'testing/**'
 
 jobs:
-  test-chris:
+  test:
     name: Test chris
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
         # N.B. `helm test` also tests subcharts for us
-        pfconEnabled: [ 'true', 'false' ]
+        pfconEnabled: [ 'pfcon-enabled', 'pfcon-disabled' ]
 
     steps:
     - name: Git checkout
@@ -35,10 +35,16 @@ jobs:
       run: helm dependency update ./charts/chris
     - name: Install chris
       run: |
+        if [ '${{ matrix.pfconEnabled }}' = 'pfcon-enabled' ]; then
+          pfconEnabled=true
+        else
+          pfconEnabled=false
+        fi
+
         helm install --create-namespace -n ghactions khris-test ./charts/chris \
           -f testing/ghactions-values.yml \
           --set cube.ingress.nodePortHost=$(hostname) \
-          --set pfcon.enabled=${{ matrix.pfconEnabled }}
+          --set pfcon.enabled=$pfconEnabled
 
     - name: Wait for server pod to be ready
       run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=chris-server --timeout=300s
@@ -118,7 +124,7 @@ jobs:
     - name: Test NodePort access
       run: curl --fail-with-body http://localhost:32000/api/v1/
     - name: Disabling pfcon should not be allowed
-      if: matrix.pfconEnabled == 'true'
+      if: matrix.pfconEnabled == 'pfcon-enabled'
       run: |
         set +e
         expected='CUBE currently depends on pfcon configured in "innetwork" mode for its storage, volume, so you cannot set .pfcon.enabled=false or .pfcon.pfcon.config.innetwork=false'
@@ -133,7 +139,7 @@ jobs:
           exit 1
         fi
     - name: Enabling pfcon should not be allowed
-      if: matrix.pfconEnabled == 'false'
+      if: matrix.pfconEnabled == 'pfcon-disabled'
       run: |
           set +e
           expected='CUBE is currently using its own volume, so you cannot set .pfcon.enabled=true or .pfcon.pfcon.config.innetwork=true'
@@ -151,30 +157,3 @@ jobs:
       run: helm uninstall -n ghactions khris-test
     - name: Delete namespace
       run: kubectl delete namespace ghactions
-
-
-  # https://helm.sh/docs/howto/chart_releaser_action/
-  release:
-    needs: [ test-chris ]
-    runs-on: ubuntu-22.04
-    if: github.event_name == 'push' && github.event.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Update Helm repos
-        run: |
-          helm repo add fnndsc https://fnndsc.github.io/charts
-          helm repo update
-
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

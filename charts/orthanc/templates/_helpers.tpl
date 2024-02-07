@@ -60,3 +60,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "orthanc.firstRegisteredUsername" -}}
+{{- if .Values.config.registeredUsers -}}
+{{- keys .Values.config.registeredUsers | first -}}
+{{- end }}
+{{- end }}
+{{- define "orthanc.firstRegisteredPassword" -}}
+{{- if (include "orthanc.firstRegisteredUsername" .) -}}
+{{- get .Values.config.registeredUsers (include "orthanc.firstRegisteredUsername" .) -}}
+{{- end }}
+{{- end }}
