@@ -17,7 +17,7 @@ keywords:
 icon: ./logo_chris.png
 
 type: application
-version: "0.1.2"
+version: "0.3.0"
 appVersion: "5.0.0"
 
 maintainers:
@@ -27,10 +27,10 @@ maintainers:
 
 dependencies:
 - name: postgresql
-  version: "~13.0.0"
+  version: "~13.2.24"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: rabbitmq
-  version: "~12.1.7"
+  version: "~12.5.6"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: pfcon
   version: ">=0.1.1, <0.2.0"
