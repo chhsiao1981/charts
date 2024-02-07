@@ -65,6 +65,7 @@ spec:
   type: ClusterIP
   selector:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
+    app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - name: http
       protocol: TCP
