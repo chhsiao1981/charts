@@ -13,11 +13,13 @@ spec:
   containers:
     - name: wget
       image: quay.io/curl/curl:8.6.0
-      command: ['sh', '-c']
-      args: |
-        for i in $(seq 10); do
-          curl -sfo /dev/null -u {{ printf "%s:%s" (include "orthanc.firstRegisteredUsername" .) (include "orthanc.firstRegisteredPassword" .) | quote }} 'http://{{ include "orthanc.fullname" . }}:{{ .Values.service.port }}/tools/now-local' && exit 0
-          sleep 1
-        done
-        exit 1
+      command: ['sh']
+      args:
+      - -c
+      - |
+          for i in $(seq 10); do
+            curl -sfo /dev/null -u {{ printf "%s:%s" (include "orthanc.firstRegisteredUsername" .) (include "orthanc.firstRegisteredPassword" .) | quote }} 'http://{{ include "orthanc.fullname" . }}:{{ .Values.service.port }}/tools/now-local' && exit 0
+            sleep 1
+          done
+          exit 1
   restartPolicy: Never
