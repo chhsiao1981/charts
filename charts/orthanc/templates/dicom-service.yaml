@@ -7,12 +7,16 @@ metadata:
   labels:
     {{- include "orthanc.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.dicomService.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.dicomService.port }}
       targetPort: dicom
       protocol: TCP
       name: dicom
+      {{- if .Values.dicomService.nodePort }}
+      nodePort: {{ .Values.dicomService.nodePort }}
+      {{- end }}
+
   selector:
     {{- include "orthanc.selectorLabels" . | nindent 4 }}
 {{- end }}
