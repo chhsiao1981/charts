@@ -1,0 +1,23 @@
+{{ if (and .Values.pfdcm.enabled .Values.pfdcm.persistence.enabled (not .Values.pfdcm.persistence.existingClaim)) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-pfdcm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: pfdcm
+    {{- include "pfdcm.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "pypx-organized directories containing .dcm image files, DICOM metadata, and pfdcm logs."
+spec:
+  {{- if .Values.pfdcm.persistence.storageClass }}
+  storageClassName: {{ .Values.pfdcm.persistence.storageClass }}
+  {{- else if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
+  {{- end }}
+  accessModes:
+  {{- toYaml .Values.pfdcm.persistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.pfdcm.persistence.size }}
+{{ end }}

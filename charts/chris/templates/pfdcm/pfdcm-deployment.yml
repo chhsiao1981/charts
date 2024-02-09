@@ -1,0 +1,75 @@
+{{- if .Values.pfdcm.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pfdcm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: pfdcm
+    {{- include "pfdcm.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: pfdcm
+  template:
+    metadata:
+      {{- with .Values.pfdcm.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: pfdcm
+        {{- include "pfdcm.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "chris.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: pfdcm
+          image: "{{ .Values.pfdcm.image.repository }}:{{ .Values.pfdcm.image.tag }}"
+          imagePullPolicy: {{ .Values.pfdcm.image.pullPolicy }}
+          env:
+            - name: MAX_WORKERS
+              value: "{{ .Values.pfdcm.maxWorkers }}"
+            - name: PORT
+              value: "{{ .Values.pfdcm.service.port }}"
+          volumeMounts:
+            - mountPath: /home/dicom
+              name: data
+            - mountPath: /home/dicom/services
+              name: config
+            - mountPath: /chris_files
+              name: chris-files
+          ports:
+            - name: http
+              containerPort: {{ .Values.pfdcm.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/about/
+              port: http
+            periodSeconds: 3
+            initialDelaySeconds: 10
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.pfdcm.resources | nindent 12 }}
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "pfdcm.claimName" . }}
+        - name: config
+          secret:
+            secretName: {{ .Release.Name }}-pfdcm-services
+            optional: false
+        - name: chris-files
+          persistentVolumeClaim:
+            claimName: {{ include "cube.filesVolume" . }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
+{{ end }}

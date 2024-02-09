@@ -211,6 +211,9 @@ rabbitmq:
   volumePermissions:
     enabled: false
 
+# pfcon: ChRIS compute resource
+#####################
+
 pfcon:
   enabled: true
 
@@ -276,3 +279,257 @@ pfcon:
     # or the default fnndsc/cube container user, so that the container user can write to the shared volume's filesystem.
     # Should be disabled on OpenShift.
     setSecurityContext: true
+
+
+# pfdcm: ChRIS PACS connector
+#####################
+
+pfdcm:
+  enabled: false
+  image:
+    repository: ghcr.io/fnndsc/pfdcm
+    pullPolicy: IfNotPresent
+    tag: "3.1.22"
+  podAnnotations: {}
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 4005
+    # nodePort:
+  maxWorkers: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 1
+      memory: 1Gi
+  persistence:
+    enabled: true
+    # existingClaim: ""
+    # storageClass:
+    size: 1Gi
+    accessModes: [ "ReadWriteOnce" ]
+
+  # Does the same as .Values.cube.enablePodAffinityWorkaround, but for pfdcm's satellite
+  # services: pfdcmListener, pfdcmDicomweb. Likely necessary when using RWO volumes.
+  enablePodAffinityWorkaround: false
+
+  # If Orthanc is enabled, then "aet" will be the aet of pfdcm's listener.
+  aet: "CHRISLOCAL"
+
+  # Additional pfdcm configuration. Usually, you'll want to leave this empty.
+  # pfdcm will be preconfigured with the CUBE and Orthanc of this chart.
+  # If this pfdcm interacts with multiple CUBEs or multiple PACS servers,
+  # add them here.
+  additionalConfig:
+    cube: {}
+      # local:
+      #   url: https://cube.example.org/api/v1/
+      #   username: pfdcm
+      #   password: pfdcm1234
+    storage: {}
+      # local:
+      #   storagetype: fs
+      #   storepath: /files
+    pacs:
+      services: {}
+        # orthanc:
+        #   info:
+        #     aet: CHRISLOCAL
+        #     aet_listener: ORTHANC
+        #     aec: ORTHANC
+        #     serverIP: orthanc
+        #     serverPort: 4242
+
+  # DICOM listener for pfdcm. Enabled when pfdcm is enabled.
+  listener:
+    image:
+      repository: ghcr.io/fnndsc/pypx-listener
+      pullPolicy: IfNotPresent
+      tag: "1.0.3"
+    podAnnotations: {}
+    # The PACS server must be configured to push to this service.
+    # If using Orthanc, the Helm chart will help you validate your
+    # configuration of Orthanc's modailities to include this service.
+    service:
+      type: ClusterIP
+      port: 11113
+      # nodePort: 30033
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+  # Optional DICOMweb-compliant API for PFDCM cached data
+  dicomweb:
+    enabled: false
+    replicaCount: 1
+    image:
+      repository: ghcr.io/fnndsc/pypx-dicomweb
+      pullPolicy: IfNotPresent
+      tag: "latest@sha256:47370ae446098134e3cdf90b7c8b0840f7900057b1c396c5dc921d20a789cd46"
+    podAnnotations: {}
+    service:
+      type: ClusterIP
+      port: 4006
+      # nodePort:
+    resources:
+      limits:
+        cpu: 1
+        memory: 512Mi
+      requests:
+        cpu: 1
+        memory: 512Mi
+    rustLog: pypx_dicomweb=DEBUG
+
+  # Optional front-end for PFDCM data, requires dicomweb
+  ohif:
+    enabled: false
+    replicaCount: 1
+    image:
+      repository: docker.io/ohif/app
+      pullPolicy: IfNotPresent
+      tag: "v3.7.0"
+    podAnnotations: {}
+    service:
+      type: ClusterIP
+      port: 8080
+      # nodePort:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+    configuration:
+      # friendlyName: OHIF Viewer
+
+      ## wadoUriRoot, qidoRoot, and wadoRoot are required.
+      ## After installing this chart, replace these values with the publicly accesible
+      ## URL of the above PFDCM dicomweb service. Then upgrade the chart release
+      ## and restart the ohif deployment.
+      # wadoUriRoot: "https://example.com/dicomweb"
+      # qidoRoot: "https://example.com/dicomweb"
+      # wadoRoot: "https://example.com/dicomweb"
+
+
+# PACS server
+orthanc:
+  # If Orthanc is enabled, it is recommended to also enable pfdcm.
+  enabled: false
+  podAnnotations: {}
+  podSecurityContext: {}
+    # fsGroup: 2000
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+  # Orthanc HTTP API and web app
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8042
+    # nodePort:
+  # PACS server
+  dicomService:
+    enabled: true
+    type: ClusterIP
+    port: 4242
+    # nodePort:
+  resources:
+    limits:
+      cpu: 1
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 4Gi
+  config:
+    # The logical name of this instance of Orthanc. This one is
+    # displayed in Orthanc Explorer and at the URI "/system".
+    name: "Orthanc"
+    # Enable the transparent compression of the DICOM instances
+    storageCompression: false
+    # Action to take when the maximum storage is reached.
+    # By default, the patients are recycled ("Recycle" mode).
+    # In "Reject" mode, the sender will receive a 0xA700 DIMSE status code
+    # if the instance was sent through C-Store, a 507 HTTP status code
+    # if using the REST API and a 0xA700 Failure reason when using
+    # DicomWeb Stow-RS 
+    # Allowed values: "Recycle", "Reject"
+    # (new in Orthanc 1.11.2)
+    maximumStorageMode: Reject
+    # Maximum size of the storage cache in MB.  The storage cache
+    # is stored in RAM and contains a copy of recently accessed
+    # files (written or read).  A value of "0" indicates the cache
+    # is disabled.  (new in Orthanc 1.10.0)
+    maximumStorageCacheSize: 0
+
+    # The DICOM Application Entity Title
+    dicomAet: "ORTHANC"
+    # Check whether the called AET corresponds during a DICOM request
+    dicomCheckCalledAet: false
+
+    # The default encoding that is assumed for DICOM files without
+    # "SpecificCharacterSet" DICOM tag, and that is used when answering
+    # C-Find requests (including worklists). The allowed values are
+    # "Ascii", "Utf8", "Latin1", "Latin2", "Latin3", "Latin4",
+    # "Latin5", "Cyrillic", "Windows1251", "Arabic", "Greek", "Hebrew",
+    # "Thai", "Japanese", and "Chinese".
+    defaultEncoding: "Latin1"
+
+    # Set the timeout (in seconds) after which the DICOM associations
+    # are closed by the Orthanc SCP (server) if no further DIMSE
+    # command is received from the SCU (client).
+    dicomScpTimeout: 30
+
+    # The timeout (in seconds) after which the DICOM associations are
+    # considered as closed by the Orthanc SCU (client) if the remote
+    # DICOM SCP (server) does not answer.
+    dicomScuTimeout: 10
+
+    # Whether or not the password protection is enabled
+    AuthenticationEnabled: true
+
+    # The list of the registered users. Because Orthanc uses HTTP
+    # Basic Authentication, the passwords are stored as plain text.
+    registeredUsers:
+      orthanc: orthanc
+    
+    # The list of the known DICOM modalities
+    #
+    # A fourth parameter is available to enable patches for a
+    # specific PACS manufacturer. The allowed values are currently
+    # "Generic" (default value), "StoreScp" (storescp tool from
+    # DCMTK), "ClearCanvas", "MedInria", "Dcm4Chee", "SyngoVia",
+    # "AgfaImpax" (Agfa IMPAX), "EFilm2" (eFilm version 2), and
+    # "Vitrea". This parameter is case-sensitive.
+    dicomModalities:
+      # !!!IMPORTANT!!!
+      # To use in combination with pfdcm, you MUST define a modality for
+      # `.Values.pfdcm.aet`
+      "CHRISLOCAL": [ "CHRISLOCAL", "NAME-orthanc-dicom", 4242 ]
+      # "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
+
+    # Whether Orthanc monitors its metrics (new in Orthanc 1.5.4). If
+    # set to "true", the metrics can be retrieved at
+    # "/tools/metrics-prometheus" formetted using the Prometheus
+    # text-based exposition format.
+    metricsEnabled: true
+
+  persistence:
+    storage:
+      size: 1Gi
+      # storageClass: my-storage-class
+      accessModes: [ ReadWriteOnce ]
+    index:
+      size: 1Gi
+      # storageClass: my-storage-class
+      accessModes: [ ReadWriteOnce ]

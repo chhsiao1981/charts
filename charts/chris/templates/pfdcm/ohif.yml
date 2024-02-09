@@ -1,0 +1,314 @@
+{{- define "ohif.labels" }}
+app.kubernetes.io/name: ohif
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.pfdcm.ohif.image.tag }}
+app.kubernetes.io/component: pfdcm
+app.kubernetes.io/part-of: chris
+{{- end }}
+{{- if .Values.pfdcm.ohif.enabled -}}
+{{- if (not .Values.pfdcm.enabled) -}}
+{{ fail "pfdcm.ohif should not be enabled without pfdcm.enabled" }}
+{{- end -}}
+{{- if (not .Values.pfdcm.dicomweb.enabled) -}}
+{{ fail "pfdcm.ohif does not work without pfdcm.dicomweb.enabled" }}
+{{- end -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pfdcm-ohif
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ohif.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/description: "Open Health Imaging Foundation DICOM viewer for pfdcm cached data"
+spec:
+  type: {{ .Values.pfdcm.ohif.service.type }}
+  ports:
+    - port: {{ .Values.pfdcm.ohif.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+      {{- if .Values.pfdcm.ohif.service.nodePort }}
+      nodePort: {{ .Values.pfdcm.ohif.service.nodePort }}
+      {{- end }}
+  selector:
+    {{- include "ohif.labels" . | indent 4 }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pfdcm-ohif
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ohif.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/description: "Open Health Imaging Foundation DICOM viewer for pfdcm cached data"
+spec:
+  replicas: {{ .Values.pfdcm.ohif.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ohif.labels" . | indent 6 }}
+  template:
+    metadata:
+      {{- with .Values.pfdcm.ohif.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ohif.labels" . | indent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "chris.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ohif
+          image: "{{ .Values.pfdcm.ohif.image.repository }}:{{ .Values.pfdcm.ohif.image.tag }}"
+          imagePullPolicy: {{ .Values.pfdcm.ohif.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html/app-config.js
+              subPath: app-config.js
+              name: config
+              readOnly: true
+          env:
+            - name: PORT
+              value: {{ .Values.pfdcm.ohif.service.port | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.pfdcm.ohif.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /app-config.js
+              port: http
+            periodSeconds: 3
+            initialDelaySeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.pfdcm.ohif.resources | nindent 12 }}
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-ohif-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ohif-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ohif.labels" . | indent 4 }}
+  annotations:
+    kubernetes.io/description: "Configures OHIF to connect with the pfdcm DICOMweb adapter service"
+data:
+  app-config.js: |
+    window.config = {
+      routerBasename: '/',
+      // whiteLabeling: {},
+      extensions: [],
+      modes: [],
+      customizationService: {},
+      showStudyList: true,
+      // some windows systems have issues with more than 3 web workers
+      maxNumberOfWebWorkers: 3,
+      // below flag is for performance reasons, but it might not work for all servers
+      showWarningMessageForCrossOrigin: true,
+      showCPUFallbackMessage: true,
+      showLoadingIndicator: true,
+      strictZSpacingForVolumeViewport: true,
+      maxNumRequests: {
+        interaction: 100,
+        thumbnail: 75,
+        // Prefetch number is dependent on the http protocol. For http 2 or
+        // above, the number of requests can be go a lot higher.
+        prefetch: 25,
+      },
+      // filterQueryParam: false,
+      defaultDataSourceName: 'pfdcm',
+      /* Dynamic config allows user to pass "configUrl" query string this allows to load config without recompiling application. The regex will ensure valid configuration source */
+      // dangerouslyUseDynamicConfig: {
+      //   enabled: true,
+      //   // regex will ensure valid configuration source and default is /.*/ which matches any character. To use this, setup your own regex to choose a specific source of configuration only.
+      //   // Example 1, to allow numbers and letters in an absolute or sub-path only.
+      //   // regex: /(0-9A-Za-z.]+)(\/[0-9A-Za-z.]+)*/
+      //   // Example 2, to restricts to either hosptial.com or othersite.com.
+      //   // regex: /(https:\/\/hospital.com(\/[0-9A-Za-z.]+)*)|(https:\/\/othersite.com(\/[0-9A-Za-z.]+)*)/
+      //   regex: /.*/,
+      // },
+      dataSources: [
+        {
+          namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
+          sourceName: 'pfdcm',
+          configuration: {
+            friendlyName: {{ .Values.pfdcm.ohif.configuration.friendlyName | default "ChRIS pfdcm cache" | quote }},
+            name: 'pfdcm',
+            wadoUriRoot: {{ .Values.pfdcm.ohif.configuration.wadoUriRoot | quote }},
+            qidoRoot: {{ .Values.pfdcm.ohif.configuration.qidoRoot | quote }},
+            wadoRoot: {{ .Values.pfdcm.ohif.configuration.wadoRoot | quote }},
+            qidoSupportsIncludeField: false,
+            supportsReject: false,
+            imageRendering: 'wadors',
+            thumbnailRendering: 'wadors',
+            enableStudyLazyLoad: true,
+            supportsFuzzyMatching: false,
+            supportsWildcard: false,
+            staticWado: false,
+            singlepart: 'bulkdata,video',
+            bulkDataURI: {
+              enabled: true,
+              relativeResolution: 'studies',
+            },
+            omitQuotationForMultipartRequest: true
+          },
+        },
+        {
+          namespace: '@ohif/extension-default.dataSourcesModule.dicomwebproxy',
+          sourceName: 'dicomwebproxy',
+          configuration: {
+            friendlyName: 'dicomweb delegating proxy',
+            name: 'dicomwebproxy',
+          },
+        },
+        {
+          namespace: '@ohif/extension-default.dataSourcesModule.dicomjson',
+          sourceName: 'dicomjson',
+          configuration: {
+            friendlyName: 'dicom json',
+            name: 'json',
+          },
+        },
+        {
+          namespace: '@ohif/extension-default.dataSourcesModule.dicomlocal',
+          sourceName: 'dicomlocal',
+          configuration: {
+            friendlyName: 'dicom local',
+          },
+        },
+      ],
+      httpErrorHandler: error => {
+        // This is 429 when rejected from the public idc sandbox too often.
+        console.warn(error.status);
+      },
+      // whiteLabeling: {
+      //   /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+      //   createLogoComponentFn: function (React) {
+      //     return React.createElement(
+      //       'a',
+      //       {
+      //         target: '_self',
+      //         rel: 'noopener noreferrer',
+      //         className: 'text-purple-600 line-through',
+      //         href: '/',
+      //       },
+      //       React.createElement('img',
+      //         {
+      //           src: './assets/customLogo.svg',
+      //           className: 'w-8 h-8',
+      //         }
+      //       ))
+      //   },
+      // },
+      hotkeys: [
+        {
+          commandName: 'incrementActiveViewport',
+          label: 'Next Viewport',
+          keys: ['right'],
+        },
+        {
+          commandName: 'decrementActiveViewport',
+          label: 'Previous Viewport',
+          keys: ['left'],
+        },
+        { commandName: 'rotateViewportCW', label: 'Rotate Right', keys: ['r'] },
+        { commandName: 'rotateViewportCCW', label: 'Rotate Left', keys: ['l'] },
+        { commandName: 'invertViewport', label: 'Invert', keys: ['i'] },
+        {
+          commandName: 'flipViewportHorizontal',
+          label: 'Flip Horizontally',
+          keys: ['h'],
+        },
+        {
+          commandName: 'flipViewportVertical',
+          label: 'Flip Vertically',
+          keys: ['v'],
+        },
+        { commandName: 'scaleUpViewport', label: 'Zoom In', keys: ['+'] },
+        { commandName: 'scaleDownViewport', label: 'Zoom Out', keys: ['-'] },
+        { commandName: 'fitViewportToWindow', label: 'Zoom to Fit', keys: ['='] },
+        { commandName: 'resetViewport', label: 'Reset', keys: ['space'] },
+        { commandName: 'nextImage', label: 'Next Image', keys: ['down'] },
+        { commandName: 'previousImage', label: 'Previous Image', keys: ['up'] },
+        // {
+        //   commandName: 'previousViewportDisplaySet',
+        //   label: 'Previous Series',
+        //   keys: ['pagedown'],
+        // },
+        // {
+        //   commandName: 'nextViewportDisplaySet',
+        //   label: 'Next Series',
+        //   keys: ['pageup'],
+        // },
+        {
+          commandName: 'setToolActive',
+          commandOptions: { toolName: 'Zoom' },
+          label: 'Zoom',
+          keys: ['z'],
+        },
+        // ~ Window level presets
+        {
+          commandName: 'windowLevelPreset1',
+          label: 'W/L Preset 1',
+          keys: ['1'],
+        },
+        {
+          commandName: 'windowLevelPreset2',
+          label: 'W/L Preset 2',
+          keys: ['2'],
+        },
+        {
+          commandName: 'windowLevelPreset3',
+          label: 'W/L Preset 3',
+          keys: ['3'],
+        },
+        {
+          commandName: 'windowLevelPreset4',
+          label: 'W/L Preset 4',
+          keys: ['4'],
+        },
+        {
+          commandName: 'windowLevelPreset5',
+          label: 'W/L Preset 5',
+          keys: ['5'],
+        },
+        {
+          commandName: 'windowLevelPreset6',
+          label: 'W/L Preset 6',
+          keys: ['6'],
+        },
+        {
+          commandName: 'windowLevelPreset7',
+          label: 'W/L Preset 7',
+          keys: ['7'],
+        },
+        {
+          commandName: 'windowLevelPreset8',
+          label: 'W/L Preset 8',
+          keys: ['8'],
+        },
+        {
+          commandName: 'windowLevelPreset9',
+          label: 'W/L Preset 9',
+          keys: ['9'],
+        },
+      ],
+    };
+
+
+{{ end }}
