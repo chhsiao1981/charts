@@ -1,0 +1,25 @@
+{{- if (and .Values.pfdcm.enabled .Values.pfdcm.service.enabled) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pfdcm-listener
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: pfdcm-listener
+    {{- include "pfdcm.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "pfdcm DICOM retrieval listener service."
+spec:
+  type: {{ .Values.pfdcm.listener.service.type }}
+  ports:
+    - port: {{ .Values.pfdcm.listener.service.port }}
+      targetPort: storescp
+      protocol: TCP
+      name: storescp
+      {{- if .Values.pfdcm.listener.service.nodePort }}
+      nodePort: {{ .Values.pfdcm.listener.service.nodePort }}
+      {{- end }}
+  selector:
+    app.kubernetes.io/name: pfdcm-listener
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}

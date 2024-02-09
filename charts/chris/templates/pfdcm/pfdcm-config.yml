@@ -1,0 +1,78 @@
+{{/*
+pfdcm needs a user account (more like a system account)
+to be able to push files to CUBE.
+On first install, randomly create the password.
+On subsequent updates, get the existing password from existing secret.
+*/}}
+{{- define "pfdcm.localCube" -}}
+{{- with (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-pfdcm-services"))}}
+{{ pick (get .data "cube.json" | b64dec | fromJson) "local" | toYaml }}
+{{- else }}
+local:
+  url: "http://{{ .Release.Name }}-server:8000/api/v1/"
+  username: chris  # only the "chris" user is allowed to register pacsfiles.
+  password: {{ randAlphaNum 32 }}
+{{- end -}}
+{{- end -}}
+
+{{/* Mounted PVC where CUBE stores its files */}}
+{{- define "pfdcm.localStorage" -}}
+local:
+  storagetype: fs
+  storepath: /chris_files
+{{- end -}}
+
+{{/* Orthanc subchart */}}
+{{- define "pfdcm.localOrthanc" -}}
+{{- if (and .Values.pfdcm.enabled .Values.orthanc.enabled) -}}
+
+{{/* Validate Orthanc DICOM Modalities is configured to push to pfdcmListener service */}}
+{{- $aet := .Values.pfdcm.aet -}}
+{{- $listenerService := include "pfdcm.listenerService" . -}}
+{{- $listenerPort := .Values.pfdcm.listener.service.port -}}
+{{- with (get .Values.orthanc.config.dicomModalities .Values.pfdcm.aet) -}}
+{{- if (ne (index . 1 ) $listenerService) -}}
+{{- fail (printf "Orthanc modality \"%s\" must have host \"%s\"" $aet $listenerService) -}}
+{{- end -}}
+{{- if (ne (index . 2 ) $listenerPort ) -}}
+{{- fail (printf "Orthanc modality \"%s\" must have port \"%d\"" $aet (int $listenerPort)) -}}
+{{- end -}}
+{{- else -}}
+{{- fail (
+  printf ".Values.orthanc.config.dicomModalities must have an entry \"%s\": [\"%s\", \"%s\", %d]"
+  $aet $aet $listenerService $listenerPort
+) -}}
+{{- end -}}
+{{ .Values.orthanc.config.name }}:
+  info:
+    aet: {{ .Values.pfdcm.aet }}
+    aet_listener: "ORTHANC"
+    aec: "ORTHANC"
+    serverIP: "{{ .Release.Name }}-orthanc-dicom"
+    serverPort: "{{ .Values.orthanc.dicomService.port }}"
+{{- end -}}
+{{- end -}}
+
+
+{{- if .Values.pfdcm.enabled -}}
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{ .Release.Name }}-pfdcm-services
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: pfdcm
+    {{- include "pfdcm.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "Configuration of the CUBE and PACS this PFDCM speaks to"
+stringData:
+  cube.json: |
+    {{ include "pfdcm.localCube" . | fromYaml | merge .Values.pfdcm.additionalConfig.cube | toPrettyJson | nindent 4 }}
+  storage.json: |
+    {{ include "pfdcm.localStorage" . | fromYaml | merge .Values.pfdcm.additionalConfig.storage | toPrettyJson | nindent 4 }}
+  pacs.json: |
+    {
+      "services": {{ include "pfdcm.localOrthanc" . | fromYaml | merge .Values.pfdcm.additionalConfig.pacs.services | toPrettyJson | nindent 8 }}
+    }
+{{ end }}

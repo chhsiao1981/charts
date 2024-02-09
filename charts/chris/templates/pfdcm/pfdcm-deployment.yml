@@ -1,15 +1,18 @@
+{{- if .Values.pfdcm.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pfdcm.fullname" . }}
+  name: {{ .Release.Name }}-pfdcm
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "pfdcm.pfdcmLabels" . | nindent 4 }}
+    app.kubernetes.io/name: pfdcm
+    {{- include "pfdcm.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "pfdcm.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: pfdcm
   template:
     metadata:
       {{- with .Values.pfdcm.podAnnotations }}
@@ -17,17 +20,19 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "pfdcm.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: pfdcm
+        {{- include "pfdcm.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ include "chris.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
       containers:
         - name: pfdcm
-          image: "{{ .Values.pfdcm.image.repository }}:{{ .Values.pfdcm.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.pfdcm.image.repository }}:{{ .Values.pfdcm.image.tag }}"
           imagePullPolicy: {{ .Values.pfdcm.image.pullPolicy }}
           env:
             - name: MAX_WORKERS
@@ -39,24 +44,32 @@ spec:
               name: data
             - mountPath: /home/dicom/services
               name: config
+            - mountPath: /chris_files
+              name: chris-files
           ports:
             - name: http
               containerPort: {{ .Values.pfdcm.service.port }}
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /api/v1/health/
-          #     port: http
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /api/v1/about/
+              port: http
+            periodSeconds: 3
+            initialDelaySeconds: 10
+            failureThreshold: 3
           resources:
             {{- toYaml .Values.pfdcm.resources | nindent 12 }}
 
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pypx
+            claimName: {{ include "pfdcm.claimName" . }}
         - name: config
           secret:
             secretName: {{ .Release.Name }}-pfdcm-services
             optional: false
+        - name: chris-files
+          persistentVolumeClaim:
+            claimName: {{ include "cube.filesVolume" . }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
+{{ end }}

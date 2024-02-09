@@ -170,3 +170,54 @@ affinity:
   command: ["/bin/sh", "-c"]
   args: ["until wget --spider 'http://{{ .Release.Name }}-heart:8000/api/v1/users/'; do sleep 5; done"]
 {{- end }}
+
+{{/*
+pfdcm stuff
+--------------------------------------------------------------------------------
+*/}}
+
+{{- define "pfdcm.version" -}}
+{{ .Values.pfdcm.image.tag }}
+{{- end }}
+{{- define "pfdcm.listenerVersion" -}}
+{{ .Values.pfdcm.listener.image.tag }}
+{{- end }}
+{{- define "pfdcm.labels" -}}
+{{ include "chris.labels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ include "pfdcm.version" . | quote }}
+app.kubernetes.io/component: pfdcm
+{{- end }}
+{{- define "pfdcm.listenerLabels" -}}
+{{ include "chris.labels" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ include "pfdcm.listenerVersion" . | quote }}
+app.kubernetes.io/component: pfdcm
+{{- end }}
+
+{{- define "pfdcm.listenerService" -}}
+{{ .Release.Name }}-pfdcm-listener
+{{- end -}}
+
+{{- define "pfdcm.claimName" -}}
+{{ .Values.pfdcm.persistence.existingClaim | default (printf "%s-pfdcm" .Release.Name) }}
+{{- end -}}
+
+{{- define "pfdcm.podAffinityWorkaround" -}}
+{{ if .Values.pfdcm.enablePodAffinityWorkaround }}
+affinity:
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/instance
+          operator: In
+          values:
+          - {{ .Release.Name }}
+        - key: app.kubernetes.io/name
+          operator: In
+          values:
+          - pfdcm
+      topologyKey: kubernetes.io/hostname
+{{- end }}
+{{- end }}

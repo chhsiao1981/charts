@@ -86,6 +86,7 @@ spec:
           - -c
           - |
             import os
+            import json
             from core.models import ChrisInstance
             from django.contrib.auth.models import User
 
@@ -93,19 +94,28 @@ spec:
             chris_instance.job_id_prefix = {{ .Values.cube.jobPrefix | default (printf "%s-jid-" .Release.Name) | quote }}
             chris_instance.save()
 
-            user_config = {
+            superuser_config = {
                 'username': os.environ['CHRIS_SUPERUSER_USERNAME'],
                 'password': os.environ['CHRIS_SUPERUSER_PASSWORD'],
                 'email': os.environ['CHRIS_SUPERUSER_EMAIL']
             }
+            users = [superuser_config]
+            if 'PFDCM_CUBES' in os.environ:
+                pfdcm_cubes = json.loads(os.environ['PFDCM_CUBES'])
+                users.append({
+                    'username': pfdcm_cubes['local']['username'],
+                    'password': pfdcm_cubes['local']['password'],
+                    'email': 'pfdcm+noreply@babymri.org'
+                })
 
-            if (existing_user := User.objects.filter(username=user_config['username']).first()) is not None:
-                existing_user.set_password(user_config['password'])
-                existing_user.save()
-                print(f'Updated password for user "{existing_user.username}"')
-            else:
-                created_user = User.objects.create_superuser(**user_config)
-                print(f'Created superuser "{created_user.username}"')
+            for user_config in users:
+                if (existing_user := User.objects.filter(username=user_config['username']).first()) is not None:
+                    existing_user.set_password(user_config['password'])
+                    existing_user.save()
+                    print(f'Updated password for user "{existing_user.username}"')
+                else:
+                    created_user = User.objects.create_superuser(**user_config)
+                    print(f'Created superuser "{created_user.username}"')
           {{- include "cube.container" . | nindent 10 }}
             - name: CHRIS_SUPERUSER_USERNAME
               valueFrom:
@@ -122,6 +132,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-chris-superuser
                   key: email
+            {{- if .Values.pfdcm.enabled }}
+            - name: PFDCM_CUBES
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-pfdcm-services
+                  key: cube.json
+            {{- end }}
 
         - name: wait-rabbitmq
           command:
