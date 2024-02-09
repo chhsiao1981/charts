@@ -37,6 +37,6 @@ dependencies:
   repository: "https://fnndsc.github.io/charts"
   condition: pfcon.enabled
 - name: orthanc
-  version: "1.0.0-rc.2, ~1.0.0"
+  version: "~1.0.0"
   repository: "https://fnndsc.github.io/charts"
   condition: orthanc.enabled
