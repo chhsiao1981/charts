@@ -76,7 +76,7 @@ spec:
             - name: PORT
               value: {{ .Values.pfdcm.dicomweb.service.port | quote }}
             - name: RUST_LOG
-              value: pypx_dicomweb=DEBUG
+              value: {{ .Values.pfdcm.dicomweb.rustLog | quote }}
           volumeMounts:
             - mountPath: /home/dicom
               name: data
