@@ -98,7 +98,7 @@ cube:
     ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
     # nodePortHost: my_hostname
 
-  # Resources
+  # Storage
   #####################
   # Persistent volume for CUBE files
   storage:
@@ -268,7 +268,7 @@ pfcon:
 
     # pman configuration
     # https://github.com/fnndsc/pman#environment-variables
-    # SECRET_KEY, CONTAINER_ENV, STORAGE_TYPE, VOLUME_NAME, and CONTAINER_USER are handled automaticallY
+    # SECRET_KEY, CONTAINER_ENV, STORAGE_TYPE, VOLUME_NAME, and CONTAINER_USER are handled automatically
     config:
       JOB_LABELS: chrisproject.org/job=plugininstance
       ENABLE_HOME_WORKAROUND: "yes"
@@ -515,7 +515,7 @@ orthanc:
       # !!!IMPORTANT!!!
       # To use in combination with pfdcm, you MUST define a modality for
       # `.Values.pfdcm.aet`
-      "CHRISLOCAL": [ "CHRISLOCAL", "NAME-orthanc-dicom", 4242 ]
+      "CHRISLOCAL": [ "CHRISLOCAL", "NAME-pfdcm-listener", 11113 ]
       # "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
 
     # Whether Orthanc monitors its metrics (new in Orthanc 1.5.4). If
