@@ -109,9 +109,9 @@ config:
 
   # The list of the registered users. Because Orthanc uses HTTP
   # Basic Authentication, the passwords are stored as plain text.
-  registeredUsers:
-    orthanc: orthanc
-  
+  registeredUsers: {}
+    # orthanc: orthanc
+
   # The list of the known DICOM modalities
   #
   # A fourth parameter is available to enable patches for a
