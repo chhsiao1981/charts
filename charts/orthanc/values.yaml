@@ -129,6 +129,15 @@ config:
   # text-based exposition format.
   metricsEnabled: true
 
+ohif:
+  enabled: true
+  # OHIF custom config file
+  # https://orthanc.uclouvain.be/book/plugins/ohif.html#user-configuration-of-ohif
+  # userConfiguration: |
+  #   window.config = {
+  #     extensions: [],
+  #     modes: []
+  #   }
 
 nodeSelector: {}
 
