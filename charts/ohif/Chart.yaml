@@ -1,0 +1,19 @@
+apiVersion: v2
+name: ohif
+description: The Open Health Imaging Foundation Viewer
+sources:
+- https://github.com/FNNDSC/charts
+- https://github.com/OHIF/Viewers
+keywords:
+- medicine
+- DICOM
+icon: ./logo-ohif-small.svg
+
+type: application
+version: "0.1.0"
+appVersion: "3.7.0"
+
+maintainers:
+- name: The FNNDSC Dev Team
+  email: dev@babyMRI.org
+  url: https://fnndsc.org
