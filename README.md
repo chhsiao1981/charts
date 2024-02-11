@@ -1,4 +1,4 @@
-# ![logo](./logo_chris.png) FNNDSC Helm Charts
+# ![logo](./charts/chris/logo_chris.png) FNNDSC Helm Charts
 
 [![MIT License](https://img.shields.io/github/license/fnndsc/charts)](https://github.com/FNNDSC/charts/blob/main/LICENSE)
 [![Release](https://github.com/FNNDSC/charts/actions/workflows/release.yml/badge.svg)](https://github.com/FNNDSC/charts/actions/workflows/release.yml)
