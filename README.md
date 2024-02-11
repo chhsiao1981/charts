@@ -1,16 +1,20 @@
 # ![logo](./logo_chris.png) FNNDSC Helm Charts
 
-[![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fchris%2FChart.yaml&query=%24.version&label=version)](https://fnndsc.github.io/charts)
 [![MIT License](https://img.shields.io/github/license/fnndsc/charts)](https://github.com/FNNDSC/charts/blob/main/LICENSE)
 [![Release](https://github.com/FNNDSC/charts/actions/workflows/release.yml/badge.svg)](https://github.com/FNNDSC/charts/actions/workflows/release.yml)
 [![Test ChRIS and pfcon](https://github.com/FNNDSC/charts/actions/workflows/test-chris.yml/badge.svg)](https://github.com/FNNDSC/charts/actions/workflows/test-chris.yml)
 [![Test Orthanc](https://github.com/FNNDSC/charts/actions/workflows/test-orthanc.yml/badge.svg)](https://github.com/FNNDSC/charts/actions/workflows/test-orthanc.yml)
 
-
-
 Helm charts for the [FNNDSC](https://fnndsc.org) and the [_ChRIS_ Project](https://chrisproject.org).
-_ChRIS_ is an open-source platform for medical compute.
-The most important chart of this repository is [chris](./charts/chris), see its [README](./charts/chris/README.md) for more information.
+
+## List of Charts
+
+| Chart Name     | License | Chart Version | App Version | Description |
+|----------------|---------|---------------|-------------|-------------|
+| `fnndsc/chris` | MIT |![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fchris%2FChart.yaml&query=%24.version&label=version) | ![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fchris%2FChart.yaml&query=%24.appVersion&label=appVersion) | Open-source platform for medical compute. |
+| `fnndsc/pfcon` | MIT | ![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fpfcon%2FChart.yaml&query=%24.version&label=version) | ![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fpfcon%2FChart.yaml&query=%24.appVersion&label=appVersion) | Standalone remote compute resource service for _ChRIS_ backend. |
+| `fnndsc/orthanc` | GPLv3+ | ![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Forthanc%2FChart.yaml&query=%24.version&label=version) | ![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Forthanc%2FChart.yaml&query=%24.appVersion&label=appVersion) | Open-source PACS server. https://www.orthanc-server.com/ |
+| `fnndsc/ohif` | MIT | ![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fohif%2FChart.yaml&query=%24.version&label=version) | ![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2FFNNDSC%2Fcharts%2Fmaster%2Fcharts%2Fohif%2FChart.yaml&query=%24.appVersion&label=appVersion) | Web DICOM viewer. https://ohif.org/ |
 
 ## Development
 
