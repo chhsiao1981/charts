@@ -17,7 +17,7 @@ jobs:
       - name: Create kind cluster
         run: kind create cluster
       - name: Install Orthanc
-        run: helm install orthanc ./charts/orthanc
+        run: helm install orthanc ./charts/orthanc --set config.registeredUsers.ghactions=ghactions1234
       - name: Wait for Orthanc to be ready
         run: kubectl rollout status statefulset orthanc
       - name: Test
