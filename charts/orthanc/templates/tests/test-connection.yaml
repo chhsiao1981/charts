@@ -1,4 +1,5 @@
-
+{{- $username := (include "orthanc.firstRegisteredUsername" .) | default "orthanc" -}}
+{{- $password := (include "orthanc.firstRegisteredPassword" .) | default "orthanc" -}}
 
 apiVersion: v1
 kind: Pod
@@ -18,7 +19,7 @@ spec:
       - -c
       - |
           for i in $(seq 10); do
-            curl -sfo /dev/null -u {{ printf "%s:%s" (include "orthanc.firstRegisteredUsername" .) (include "orthanc.firstRegisteredPassword" .) | quote }} 'http://{{ include "orthanc.fullname" . }}:{{ .Values.service.port }}/tools/now-local' && exit 0
+            curl -sfo /dev/null -u {{ printf "%s:%s" $username $password | quote }} 'http://{{ include "orthanc.fullname" . }}:{{ .Values.service.port }}/tools/now-local' && exit 0
             sleep 1
           done
           exit 1
