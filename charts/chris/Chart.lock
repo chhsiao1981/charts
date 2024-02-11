@@ -10,6 +10,6 @@ dependencies:
   version: 0.1.1
 - name: orthanc
   repository: https://fnndsc.github.io/charts
-  version: 1.0.2
-digest: sha256:707b059370b20c2730b9d605e41018d3bd421ea8d6b88aaccef286381e58c2c5
-generated: "2024-02-09T02:04:52.528314963-05:00"
+  version: 1.1.0
+digest: sha256:66d6ab9cc8fc3466cf8e512032ca664cffef0015c7a74f6f3eef44c7c11d2eb1
+generated: "2024-02-11T16:17:31.333705638-05:00"
