@@ -30,7 +30,7 @@ dependencies:
   version: "~13.4.4"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: rabbitmq
-  version: "~12.10.0"
+  version: "~12.5.6"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: pfcon
   version: ">=0.1.2, <0.2.0"
