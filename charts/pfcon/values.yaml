@@ -39,6 +39,8 @@ storage:
   accessModes: [ "ReadWriteOnce" ]
   # storageClass:
 
+nodeSelector: {}
+
 pfcon:
   image:
     repository: ghcr.io/fnndsc/pfcon

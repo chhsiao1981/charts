@@ -26,6 +26,10 @@ spec:
       serviceAccountName: {{ include "pfcon.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: pfcon
           image: "{{ .Values.pfcon.image.repository }}:{{ .Values.pfcon.image.tag | default .Chart.AppVersion }}"
