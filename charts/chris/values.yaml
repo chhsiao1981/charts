@@ -226,6 +226,8 @@ pfcon:
     type: ClusterIP
     port: 5005
 
+  nodeSelector: {}
+
   # Storage space for CUBE files should be configured here.
   # It is recommended to allocate as much space as possible for CUBE files.
   storage:

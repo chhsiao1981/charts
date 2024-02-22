@@ -17,7 +17,7 @@ keywords:
 icon: ./logo_chris.png
 
 type: application
-version: "0.6.0"
+version: "0.7.0"
 appVersion: "5.0.0"
 
 maintainers:
@@ -33,7 +33,7 @@ dependencies:
   version: "~12.5.6"
   repository: "oci://registry-1.docker.io/bitnamicharts"
 - name: pfcon
-  version: ">=0.1.2, <0.2.0"
+  version: ">=0.1.2, <0.3.0"
   repository: "https://fnndsc.github.io/charts"
   condition: pfcon.enabled
 - name: orthanc
