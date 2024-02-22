@@ -115,7 +115,7 @@ cube:
   plugins:
     - https://cube.chrisproject.org/api/v1/plugins/1/   # pl-dircopy
     - https://cube.chrisproject.org/api/v1/plugins/2/   # pl-tsdircopy
-    - https://cube.chrisproject.org/api/v1/plugins/3/  # pl-topologicalcopy
+    - https://cube.chrisproject.org/api/v1/plugins/3/   # pl-topologicalcopy
 
   # Ingress
   #####################
