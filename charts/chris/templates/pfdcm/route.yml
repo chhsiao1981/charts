@@ -1,0 +1,20 @@
+{{- if .Values.pfdcm.route.enabled -}}
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ .Release.Name }}-pfdcm
+  labels:
+    app.kubernetes.io/name: pfdcm
+    {{- include "pfdcm.labels" . | nindent 4 }}
+spec:
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-pfdcm
+  {{- with .Values.pfdcm.route.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  port:
+    targetPort: http
+  host: {{ required ".Values.pfdcm.route.host is required." .Values.pfdcm.route.host }}
+{{- end }}
