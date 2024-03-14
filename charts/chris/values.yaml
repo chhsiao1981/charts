@@ -161,7 +161,8 @@ cube:
         cpu: 250m
 
   server:
-    workers: 4
+    # In the command, you can customize the number of workers, timeout, etc.
+    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "-t", "3600", "config.wsgi:application"]
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
     resources:
