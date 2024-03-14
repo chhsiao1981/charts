@@ -1,0 +1,43 @@
+cube:
+  server:
+    service:
+      type: NodePort
+      nodePort: 32000
+    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "8", "-t", "300", "config.wsgi:application"]
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+pfdcm:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 32001
+  listener:
+    service:
+      type: NodePort
+      nodePort: 32004
+    config:
+      threads: 8
+    env:
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.name=oxidicom
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://tempo.grafana.svc.cluster.local:4318
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+orthanc:
+  service:
+    type: NodePort
+    nodePort: 32003
+  config:
+    dicomModalities:
+      "ChRIS": [ "ChRIS", "cacao-oxidicom", 11111 ]

@@ -1,27 +1,3 @@
-{{/*
-pfdcm needs a user account (more like a system account)
-to be able to push files to CUBE.
-On first install, randomly create the password.
-On subsequent updates, get the existing password from existing secret.
-*/}}
-{{- define "pfdcm.localCube" -}}
-{{- with (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-pfdcm-services"))}}
-{{ pick (get .data "cube.json" | b64dec | fromJson) "local" | toYaml }}
-{{- else }}
-local:
-  url: "http://{{ .Release.Name }}-server:8000/api/v1/"
-  username: chris  # only the "chris" user is allowed to register pacsfiles.
-  password: {{ randAlphaNum 32 }}
-{{- end -}}
-{{- end -}}
-
-{{/* Mounted PVC where CUBE stores its files */}}
-{{- define "pfdcm.localStorage" -}}
-local:
-  storagetype: fs
-  storepath: /chris_files
-{{- end -}}
-
 {{/* Orthanc subchart */}}
 {{- define "pfdcm.localOrthanc" -}}
 {{- if (and .Values.pfdcm.enabled .Values.orthanc.enabled) -}}
@@ -67,10 +43,9 @@ metadata:
   annotations:
     kubernetes.io/description: "Configuration of the CUBE and PACS this PFDCM speaks to"
 stringData:
-  cube.json: |
-    {{ include "pfdcm.localCube" . | fromYaml | merge .Values.pfdcm.additionalConfig.cube | toPrettyJson | nindent 4 }}
-  storage.json: |
-    {{ include "pfdcm.localStorage" . | fromYaml | merge .Values.pfdcm.additionalConfig.storage | toPrettyJson | nindent 4 }}
+  {{- /* cube.json and storage.json are both blank, because the related functionality is now handled by oxidicom. */}}
+  cube.json: "{}"
+  storage.json: "{}"
   pacs.json: |
     {
       "services": {{ include "pfdcm.localOrthanc" . | fromYaml | merge .Values.pfdcm.additionalConfig.pacs.services | toPrettyJson | nindent 8 }}

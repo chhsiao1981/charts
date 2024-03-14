@@ -1,25 +1,25 @@
-{{- if (and .Values.pfdcm.enabled .Values.pfdcm.service.enabled) }}
+{{- if (and .Values.pfdcm.enabled .Values.pfdcm.listener.service.enabled) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-pfdcm-listener
+  name: {{ .Release.Name }}-oxidicom
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: pfdcm-listener
+    app.kubernetes.io/name: oxidicom
     {{- include "pfdcm.labels" . | nindent 4 }}
   annotations:
-    kubernetes.io/description: "pfdcm DICOM retrieval listener service."
+    kubernetes.io/description: "ChRIS DICOM receiver"
 spec:
   type: {{ .Values.pfdcm.listener.service.type }}
   ports:
     - port: {{ .Values.pfdcm.listener.service.port }}
-      targetPort: storescp
+      targetPort: scp
       protocol: TCP
-      name: storescp
+      name: scp
       {{- if .Values.pfdcm.listener.service.nodePort }}
       nodePort: {{ .Values.pfdcm.listener.service.nodePort }}
       {{- end }}
   selector:
-    app.kubernetes.io/name: pfdcm-listener
+    app.kubernetes.io/name: oxidicom
     app.kubernetes.io/instance: {{ .Release.Name }}
 {{ end }}

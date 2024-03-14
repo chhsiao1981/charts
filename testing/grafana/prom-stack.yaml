@@ -1,0 +1,40 @@
+alertmanager:
+  enabled: false
+
+grafana:
+  defaultDashboardsTimezone: est
+  adminPassword: chris1234
+  persistence:
+    enabled: true
+    type: sts
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    finalizers: []
+  additionalDataSources:
+   - name: Tempo
+     type: tempo
+     access: proxy
+     orgId: 1
+     url: http://tempo:3100
+     basicAuth: false
+     isDefault: false
+     version: 1
+     editable: false
+     apiVersion: 1
+     uid: tempo
+  service:
+    type: NodePort
+    nodePort: 32005
+
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
+prometheusOperator:
+  enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    selfMonitor: false

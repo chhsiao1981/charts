@@ -117,14 +117,6 @@ cube:
     - https://cube.chrisproject.org/api/v1/plugins/2/   # pl-tsdircopy
     - https://cube.chrisproject.org/api/v1/plugins/3/   # pl-topologicalcopy
 
-  # Ingress
-  #####################
-  ingress: {}
-    ## Use nodePort for ingress
-    # nodePort: "32000"
-    ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
-    # nodePortHost: my_hostname
-
   # Storage
   #####################
   # Persistent volume for CUBE files
@@ -143,11 +135,11 @@ cube:
     ## Recommended value is x4 the size of the largest anticipated plugin instance output directory.
     resources:
       requests:
-        memory: 20Gi
-        cpu: 2
+        memory: 3814Mi
+        cpu: 1
       limits:
-        memory: 21Gi
-        cpu: 2
+        memory: 3814Mi
+        cpu: 1
 
   workerPeriodic:
     ## Resources for the periodic worker.
@@ -157,11 +149,21 @@ cube:
         memory: 1Gi
         cpu: 250m
       limits:
-        memory: 1.1Gi
+        memory: 1Gi
         cpu: 250m
 
   server:
+    service:
+      type: ClusterIP
+      port: 8000
+      # nodePort:
+      ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
+      # nodePortHost:
+    
     # In the command, you can customize the number of workers, timeout, etc.
+    # *do not* change the value for -b
+    # *do not* change the positional argument "config.wsgi:application"
+    # You may change -t (timeout in seconds) and/or -w (workers)
     command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "-t", "3600", "config.wsgi:application"]
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
@@ -287,11 +289,11 @@ pfcon:
     # pman doesn't do anything besides sending and receiving HTTP requests.
     resources:
       limits:
-        cpu: 200m
+        cpu: 500m
         memory: 1Gi
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 500m
+        memory: 1Gi
 
     workers: 4
     workerTimeout: 30
@@ -342,19 +344,20 @@ pfdcm:
     requests:
       cpu: 1
       memory: 1Gi
+  # TODO CAN I DELETE PFDCM'S STORAGE?
   persistence:
     enabled: true
     # existingClaim: ""
     # storageClass:
     size: 1Gi
     accessModes: [ "ReadWriteOnce" ]
-
+  # TODO DELETE ME TOO
   # Does the same as .Values.cube.enablePodAffinityWorkaround, but for pfdcm's satellite
   # services: pfdcmListener, pfdcmDicomweb. Likely necessary when using RWO volumes.
   enablePodAffinityWorkaround: false
 
   # If Orthanc is enabled, then "aet" will be the aet of pfdcm's listener.
-  aet: "CHRISLOCAL"
+  aet: "ChRIS"
 
   # Additional pfdcm configuration. Usually, you'll want to leave this empty.
   # pfdcm will be preconfigured with the CUBE and Orthanc of this chart.
@@ -383,46 +386,35 @@ pfdcm:
   # DICOM listener for pfdcm. Enabled when pfdcm is enabled.
   listener:
     image:
-      repository: ghcr.io/fnndsc/pypx-listener
+      repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
-      tag: "1.0.3"
+      tag: "0.1.0"
     podAnnotations: {}
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
     # configuration of Orthanc's modailities to include this service.
     service:
+      enabled: true
       type: ClusterIP
-      port: 11113
+      port: 11111
       # nodePort: 30033
+    replicas: 1
+    config:
+      threads: 4
+      # pacs_name: "PACSNAMEOVERRIDE"
+    ## manual configuration of OpenTelemetry
+    # env:
+    #   - name: OTEL_RESOURCE_ATTRIBUTES
+    #     value: service.name=oxidicom
+    #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    #     value: http://tempo:4318
     resources:
       limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 200m
-        memory: 256Mi
-
-  # Optional DICOMweb API for PFDCM cached data, useful for connecting with OHIF
-  dicomweb:
-    enabled: false
-    replicaCount: 1
-    image:
-      repository: ghcr.io/fnndsc/pypx-dicomweb
-      pullPolicy: IfNotPresent
-      tag: "latest@sha256:47370ae446098134e3cdf90b7c8b0840f7900057b1c396c5dc921d20a789cd46"
-    podAnnotations: {}
-    service:
-      type: ClusterIP
-      port: 4006
-      # nodePort:
-    resources:
-      limits:
-        cpu: 1
+        cpu: 500m
         memory: 512Mi
       requests:
-        cpu: 1
+        cpu: 500m
         memory: 512Mi
-    rustLog: pypx_dicomweb=DEBUG
 
 # PACS server
 orthanc:
@@ -520,7 +512,7 @@ orthanc:
       # !!!IMPORTANT!!!
       # To use in combination with pfdcm, you MUST define a modality for
       # `.Values.pfdcm.aet`
-      "CHRISLOCAL": [ "CHRISLOCAL", "NAME-pfdcm-listener", 11113 ]
+      "ChRIS": [ "ChRIS", "NAME-oxidicom", 11111 ]
       # "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
 
     # Whether Orthanc monitors its metrics (new in Orthanc 1.5.4). If

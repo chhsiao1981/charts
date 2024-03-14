@@ -65,12 +65,15 @@ metadata:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
     {{- include "cube.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.cube.server.service.type }}
   selector:
     app.kubernetes.io/name: {{ include "chris.name" . }}-server
     app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - name: http
       protocol: TCP
-      port: 8000
+      port: {{ .Values.cube.server.service.port }}
       targetPort: 8000
+      {{- if .Values.cube.server.service.nodePort }}
+      nodePort: {{ .Values.cube.server.service.nodePort }}
+      {{- end }}
