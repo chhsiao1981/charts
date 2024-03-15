@@ -76,12 +76,21 @@ Finally, push to master once more.
 
 ### Observability
 
-Optionally, logs can be collected using [Vector](https://vector.dev/)
-and visualized using [OpenObserve](https://openobserve.ai/).
+Optionally, a Kubernetes observability stack can be deployed into the Kind cluster.
+You can choose between OpenObserve or Grafana.
+
+#### OpenObserve
+
+OpenObserve is much more efficient than Grafana. I also have log collection set up for OpenObserve.
+However, OpenObserve's visualization and data querying is not as good as Grafana. It is recommended
+to use OpenObserve if you (a) need to aggregate and search through logs, and/or (b) your workstation
+has less than or equal to 8 CPUs, 16GB RAM.
+
+Logs are collected using [Vector](https://vector.dev/) and visualized using [OpenObserve](https://openobserve.ai/).
 To run the observability stack and open the dashboard, run
 
 ```shell
-just observe
+just openobserve
 ```
 
 Log in with the email `dev@babymri.org` password `chris1234`.
@@ -95,7 +104,7 @@ just olog pfcon
 just olog chris-heart
 ```
 
-## How It Works
+##### How It Works
 
 Two releases of Vector are made:
 
@@ -103,3 +112,19 @@ Two releases of Vector are made:
 - "Stateless-Aggregator" which scrapes Kubelet `/metrics/cadvisor`
 
 These logs and metrics are shipped to OpenObserve.
+
+#### Grafana
+
+The Grafana stack includes:
+
+- Prometheus with kube-state-metrics and node-exporter (CPU, memory, and network usage metrics)
+- Tempo (for traces)
+- Grafana
+
+Run
+
+```shell
+just grafana
+```
+
+And log into http://localhost:32005/ with username `admin` and password `chris1234`.
