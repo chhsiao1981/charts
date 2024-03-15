@@ -6,11 +6,11 @@ cube:
     command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "20", "-t", "300", "config.wsgi:application"]
     resources:
       limits:
-        cpu: 10
-        memory: 10Gi
+        cpu: 12
+        memory: 12Gi
       requests:
-        cpu: 10
-        memory: 10Gi
+        cpu: 12
+        memory: 12Gi
 pfdcm:
   enabled: true
   service:
