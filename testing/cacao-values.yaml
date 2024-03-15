@@ -3,14 +3,14 @@ cube:
     service:
       type: NodePort
       nodePort: 32000
-    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "8", "-t", "300", "config.wsgi:application"]
+    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "20", "-t", "300", "config.wsgi:application"]
     resources:
       limits:
-        cpu: 1
-        memory: 2Gi
+        cpu: 10
+        memory: 10Gi
       requests:
-        cpu: 1
-        memory: 2Gi
+        cpu: 10
+        memory: 10Gi
 pfdcm:
   enabled: true
   service:
@@ -21,7 +21,7 @@ pfdcm:
       type: NodePort
       nodePort: 32004
     config:
-      threads: 8
+      threads: 16
     env:
       - name: OTEL_RESOURCE_ATTRIBUTES
         value: service.name=oxidicom
@@ -29,11 +29,11 @@ pfdcm:
         value: http://tempo.grafana.svc.cluster.local:4318
     resources:
       limits:
-        cpu: 1
-        memory: 2Gi
+        cpu: 2
+        memory: 8Gi
       requests:
-        cpu: 1
-        memory: 2Gi
+        cpu: 2
+        memory: 8Gi
 orthanc:
   service:
     type: NodePort

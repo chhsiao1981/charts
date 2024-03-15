@@ -388,7 +388,7 @@ pfdcm:
     image:
       repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
-      tag: "0.1.0"
+      tag: "0.1.2"
     podAnnotations: {}
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
@@ -399,22 +399,24 @@ pfdcm:
       port: 11111
       # nodePort: 30033
     replicas: 1
-    config:
-      threads: 4
-      # pacs_name: "PACSNAMEOVERRIDE"
     ## manual configuration of OpenTelemetry
     # env:
     #   - name: OTEL_RESOURCE_ATTRIBUTES
     #     value: service.name=oxidicom
     #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     #     value: http://tempo:4318
+    config:
+      threads: 16
+      # pacs_name: "PACSNAMEOVERRIDE"
     resources:
+      # It's written in Rust!
+      # with 16 threads, CPU usage peaks at 120m and memory usage peaks at 1.3 GiB
       limits:
         cpu: 500m
-        memory: 512Mi
+        memory: 1907Mi
       requests:
         cpu: 500m
-        memory: 512Mi
+        memory: 1907Mi
 
 # PACS server
 orthanc:
