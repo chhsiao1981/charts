@@ -12,9 +12,10 @@ unkind:
     kind delete cluster --name khris
 
 up:
-    helm upgrade --create-namespace --install \
-        -n kk cacao ../charts/chris -f cacao-values.yaml \
-        --set cube.server.service.nodePortHost=$(hostname)
+    [ -f custom-values.yaml ] && values=custom-values.yaml || values=default-values.yaml; \
+        helm upgrade --create-namespace --install \
+            -n kk cacao ../charts/chris -f $values \
+            --set cube.server.service.nodePortHost=$(hostname)
 
 down:
     helm uninstall -n kk cacao
