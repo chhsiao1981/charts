@@ -5,6 +5,7 @@ metadata:
   name: {{ include "orthanc.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
+    app.kubernetes.io/name: {{ include "orthanc.name" . }}
     {{- include "orthanc.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
