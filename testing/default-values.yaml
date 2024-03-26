@@ -1,3 +1,8 @@
+global:
+  podSecurityContext:
+    runAsUser: 10123456
+    runAsGroup: 20987654
+
 cube:
   server:
     service:
@@ -26,7 +31,9 @@ pfdcm:
       type: NodePort
       nodePort: 32004
     config:
-      threads: 8
+      listenerThreads: 4
+      pusherThreads: 4
+      verbose: true
     env:
       - name: OTEL_RESOURCE_ATTRIBUTES
         value: service.name=oxidicom
@@ -46,3 +53,5 @@ orthanc:
   config:
     dicomModalities:
       "ChRIS": [ "ChRIS", "cacao-oxidicom", 11111 ]
+    registeredUsers:
+      orthanc: orthanc

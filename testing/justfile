@@ -12,9 +12,9 @@ unkind:
     kind delete cluster --name khris
 
 up:
-    [ -f custom-values.yaml ] && values=custom-values.yaml || values=default-values.yaml; \
+    [ -f custom-values.yaml ] && custom_values='-f custom-values.yaml' || custom_values=; \
         helm upgrade --create-namespace --install \
-            -n kk cacao ../charts/chris -f $values \
+            -n kk cacao ../charts/chris -f default-values.yaml $custom_values \
             --set cube.server.service.nodePortHost=$(hostname)
 
 down:
@@ -54,6 +54,9 @@ chrisomatic:
 
 shell:
     kubectl exec -it -n kk deploy/cacao-chris-server -- bash
+
+clear-pacsfiles:
+    ./clear_pacsfiles.sh
 
 openobserve:
     helm repo add vector https://helm.vector.dev

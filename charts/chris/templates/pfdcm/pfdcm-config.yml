@@ -21,8 +21,8 @@
 {{- end -}}
 {{ .Values.orthanc.config.name }}:
   info:
-    aet: {{ .Values.pfdcm.aet }}
-    aet_listener: "ORTHANC"
+    aet: {{ .Values.pfdcm.aet | quote }}
+    aet_listener: {{ .Values.pfdcm.aet | quote }}
     aec: "ORTHANC"
     serverIP: "{{ .Release.Name }}-orthanc-dicom"
     serverPort: "{{ .Values.orthanc.dicomService.port }}"
