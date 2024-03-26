@@ -7,9 +7,9 @@ dependencies:
   version: 12.5.7
 - name: pfcon
   repository: https://fnndsc.github.io/charts
-  version: 0.2.0
+  version: 0.2.1
 - name: orthanc
   repository: https://fnndsc.github.io/charts
-  version: 1.2.0
-digest: sha256:ca9054d77256fef9d7436e391eb6c6d876e683fdda80dc1c289c4c2259411464
-generated: "2024-03-22T13:31:16.93075877-04:00"
+  version: 1.2.1
+digest: sha256:a69140424e30d103976710d8ddf121570ceaa71809fc6c122bb1ebe69aee43dd
+generated: "2024-03-26T12:16:54.350222565-04:00"
