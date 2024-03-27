@@ -118,7 +118,7 @@ spec:
                 print(f'Updated password for user "{existing_user.username}"')
             else:
                 created_user = User.objects.create_user(**the_chris_user_config)
-                print(f'Created superuser "{created_user.username}"')
+                print(f'Created user "{created_user.username}"')
 
           {{- include "cube.container" . | nindent 10 }}
             - name: CHRIS_SUPERUSER_USERNAME
