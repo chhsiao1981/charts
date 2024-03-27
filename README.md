@@ -77,7 +77,7 @@ Finally, push to master once more.
 ### Observability
 
 Optionally, a Kubernetes observability stack can be deployed into the Kind cluster.
-You can choose between OpenObserve or Grafana.
+You can choose between OpenObserve or a Grafana-based stack.
 
 #### OpenObserve
 
@@ -113,18 +113,6 @@ Two releases of Vector are made:
 
 These logs and metrics are shipped to OpenObserve.
 
-#### Grafana
+#### Prometheus Stack
 
-The Grafana stack includes:
-
-- Prometheus with kube-state-metrics and node-exporter (CPU, memory, and network usage metrics)
-- Tempo (for traces)
-- Grafana
-
-Run
-
-```shell
-just grafana
-```
-
-And log into http://localhost:32005/ with username `admin` and password `chris1234`.
+TODO
