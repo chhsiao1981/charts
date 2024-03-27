@@ -385,7 +385,7 @@ pfdcm:
     image:
       repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
-      tag: "1.0.0-b.2"
+      tag: "1.0.0"
     podAnnotations: {}
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
