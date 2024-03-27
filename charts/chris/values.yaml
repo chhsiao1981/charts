@@ -68,7 +68,7 @@ route:
 
 chris_admin:
   username: khris
-  email: noreply@babyMRI.org
+  email: noreply@babymri.org
   # If no password is set, then a random password is created for you.
   # password:
 
@@ -91,6 +91,9 @@ cube:
   # Configuration
   #####################
   config:
+    # Configuration of the gunicorn WSGI server.
+    # ref: https://docs.gunicorn.org/en/stable/settings.html
+    GUNICORN_CMD_ARGS: "--workers=4 --timeout=3600"
     # smaller values increases responsiveness at the cost of resource usage and possibly concurrency bugs
     CUBE_CELERY_POLL_INTERVAL: "5.0"
     # HTTP server security settings
@@ -159,12 +162,6 @@ cube:
       # nodePort:
       ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
       # nodePortHost:
-    
-    # In the command, you can customize the number of workers, timeout, etc.
-    # *do not* change the value for -b
-    # *do not* change the positional argument "config.wsgi:application"
-    # You may change -t (timeout in seconds) and/or -w (workers)
-    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "-t", "3600", "config.wsgi:application"]
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
     resources:

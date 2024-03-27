@@ -33,10 +33,8 @@ spec:
         {{- include "cube.waitServerReady" . | nindent 8 }}
       containers:
         - name: server
-          {{- if .Values.cube.server.command }}
-          command:
-          {{ .Values.cube.server.command | toYaml | nindent 10 }}
-          {{- end }}
+          command: [ "gunicorn" ]
+          args: ["-b", "0.0.0.0:8000", "config.wsgi:application"]
           {{- include "cube.container" . | nindent 10 }}
           ports:
             - name: http

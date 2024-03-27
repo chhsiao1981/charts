@@ -8,7 +8,6 @@ cube:
     service:
       type: NodePort
       nodePort: 32000
-    command: ["gunicorn", "-b", "0.0.0.0:8000", "-w", "4", "-t", "300", "config.wsgi:application"]
     resources:
       limits:
         cpu: 1
@@ -16,6 +15,8 @@ cube:
       requests:
         cpu: 1
         memory: 2Gi
+  config:
+    GUNICORN_CMD_ARGS: "--workers=4 --timeout=3600"
 
 pfcon:
   storage:
