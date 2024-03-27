@@ -37,6 +37,12 @@ config:
       endpoint: quickwit:7281
       tls:
         insecure: true
+    # TODO
+    # prometheusremotewrite:
+    #   endpoint: http://prom-stack-kube-prometheus-prometheus:8080/api/prom/push
+    #   namespace: iamfromotel_
+    #   resource_to_telemetry_conversion:
+    #     enabled: true
   extensions:
     # The health_check extension is mandatory for this chart.
     # Without the health_check extension the collector will fail the readiness and liveliness probes.
@@ -53,14 +59,17 @@ config:
       protocols:
         http:
           endpoint: ${env:MY_POD_IP}:4318
-    prometheus:
-      config:
-        scrape_configs:
-          - job_name: opentelemetry-collector
-            scrape_interval: 10s
-            static_configs:
-              - targets:
-                  - ${env:MY_POD_IP}:8888
+    kubeletstats:
+      insecure_skip_verify: true
+
+    # prometheus:
+    #   config:
+    #     scrape_configs:
+    #       - job_name: opentelemetry-collector
+    #         scrape_interval: 10s
+    #         static_configs:
+    #           - targets:
+    #               - ${env:MY_POD_IP}:8888
   service:
     telemetry:
       metrics:
@@ -75,16 +84,14 @@ config:
         processors:
           - memory_limiter
           - batch
-      # TODO
       # metrics:
       #   exporters:
-      #     - debug
+      #     - prometheusremotewrite
       #   processors:
       #     - memory_limiter
       #     - batch
       #   receivers:
       #     - otlp
-      #     - prometheus
       traces:
         exporters:
           - otlp
@@ -112,11 +119,11 @@ ports:
     enabled: false
   zipkin:
     enabled: false
-  metrics:
-    enabled: true
-    containerPort: 8888
-    servicePort: 8888
-    protocol: TCP
+  # metrics:
+  #   enabled: true
+  #   containerPort: 8888
+  #   servicePort: 8888
+  #   protocol: TCP
 
 # Resource limits & requests. Update according to your own use case as these values might be too low for a typical deployment.
 resources:
@@ -124,15 +131,14 @@ resources:
     cpu: "1"
     memory: "1Gi"
 
-serviceMonitor:
-  enabled: true
-  metricsEndpoints:
-    - port: metrics
-      interval: 5s
-
-  # additional labels for the ServiceMonitor
-  extraLabels: {}
-  #  release: kube-prometheus-stack
+# serviceMonitor:
+#   enabled: true
+#   metricsEndpoints:
+#     - port: metrics
+#       interval: 5s
+#   # additional labels for the ServiceMonitor
+#   extraLabels: {}
+#     release: kube-prometheus-stack
 
 service:
   enabled: true

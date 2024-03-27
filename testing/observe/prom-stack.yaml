@@ -1,6 +1,6 @@
-# TODO use Grafana and Prometheus Operator separately instead of this prometheus-community mega-chart.
+# TODO replace with Grafana and Mimir
 
-# disable most stuff
+# disable most stuff, we get metrics from the OpenTelemetry collector instead.
 defaultRules:
   create: false
 kubernetesServiceMonitors:
