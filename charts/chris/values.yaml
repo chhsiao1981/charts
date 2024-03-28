@@ -341,19 +341,8 @@ pfdcm:
     requests:
       cpu: 1
       memory: 1Gi
-  # TODO CAN I DELETE PFDCM'S STORAGE?
-  persistence:
-    enabled: true
-    # existingClaim: ""
-    # storageClass:
-    size: 1Gi
-    accessModes: [ "ReadWriteOnce" ]
-  # TODO DELETE ME TOO
-  # Does the same as .Values.cube.enablePodAffinityWorkaround, but for pfdcm's satellite
-  # services: pfdcmListener, pfdcmDicomweb. Likely necessary when using RWO volumes.
-  enablePodAffinityWorkaround: false
 
-  # If Orthanc is enabled, then "aet" will be the aet of pfdcm's listener.
+  # DICOM application entity title
   aet: "ChRIS"
 
   # Additional pfdcm configuration. Usually, you'll want to leave this empty.
