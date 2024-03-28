@@ -19,7 +19,7 @@
   $aet $aet $listenerService $listenerPort
 ) -}}
 {{- end -}}
-{{ .Values.orthanc.config.name }}:
+{{ .Values.orthanc.config.dicomAet }}:
   info:
     aet: {{ .Values.pfdcm.aet | quote }}
     aet_listener: {{ .Values.pfdcm.aet | quote }}
