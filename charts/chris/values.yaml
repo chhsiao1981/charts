@@ -68,7 +68,7 @@ route:
 
 chris_admin:
   username: khris
-  email: noreply@babyMRI.org
+  email: noreply@babymri.org
   # If no password is set, then a random password is created for you.
   # password:
 
@@ -91,6 +91,9 @@ cube:
   # Configuration
   #####################
   config:
+    # Configuration of the gunicorn WSGI server.
+    # ref: https://docs.gunicorn.org/en/stable/settings.html
+    GUNICORN_CMD_ARGS: "--workers=4 --timeout=3600"
     # smaller values increases responsiveness at the cost of resource usage and possibly concurrency bugs
     CUBE_CELERY_POLL_INTERVAL: "5.0"
     # HTTP server security settings
@@ -117,14 +120,6 @@ cube:
     - https://cube.chrisproject.org/api/v1/plugins/2/   # pl-tsdircopy
     - https://cube.chrisproject.org/api/v1/plugins/3/   # pl-topologicalcopy
 
-  # Ingress
-  #####################
-  ingress: {}
-    ## Use nodePort for ingress
-    # nodePort: "32000"
-    ## optionally, test the nodePort connectivity by providing the hostname to any node of your cluster
-    # nodePortHost: my_hostname
-
   # Storage
   #####################
   # Persistent volume for CUBE files
@@ -143,11 +138,11 @@ cube:
     ## Recommended value is x4 the size of the largest anticipated plugin instance output directory.
     resources:
       requests:
-        memory: 20Gi
-        cpu: 2
+        memory: 3814Mi
+        cpu: 1
       limits:
-        memory: 21Gi
-        cpu: 2
+        memory: 3814Mi
+        cpu: 1
 
   workerPeriodic:
     ## Resources for the periodic worker.
@@ -157,11 +152,16 @@ cube:
         memory: 1Gi
         cpu: 250m
       limits:
-        memory: 1.1Gi
+        memory: 1Gi
         cpu: 250m
 
   server:
-    workers: 4
+    service:
+      type: ClusterIP
+      port: 8000
+      # nodePort:
+      ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
+      # nodePortHost:
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
     resources:
@@ -286,11 +286,11 @@ pfcon:
     # pman doesn't do anything besides sending and receiving HTTP requests.
     resources:
       limits:
-        cpu: 200m
+        cpu: 500m
         memory: 1Gi
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 500m
+        memory: 1Gi
 
     workers: 4
     workerTimeout: 30
@@ -341,19 +341,20 @@ pfdcm:
     requests:
       cpu: 1
       memory: 1Gi
+  # TODO CAN I DELETE PFDCM'S STORAGE?
   persistence:
     enabled: true
     # existingClaim: ""
     # storageClass:
     size: 1Gi
     accessModes: [ "ReadWriteOnce" ]
-
+  # TODO DELETE ME TOO
   # Does the same as .Values.cube.enablePodAffinityWorkaround, but for pfdcm's satellite
   # services: pfdcmListener, pfdcmDicomweb. Likely necessary when using RWO volumes.
   enablePodAffinityWorkaround: false
 
   # If Orthanc is enabled, then "aet" will be the aet of pfdcm's listener.
-  aet: "CHRISLOCAL"
+  aet: "ChRIS"
 
   # Additional pfdcm configuration. Usually, you'll want to leave this empty.
   # pfdcm will be preconfigured with the CUBE and Orthanc of this chart.
@@ -382,46 +383,56 @@ pfdcm:
   # DICOM listener for pfdcm. Enabled when pfdcm is enabled.
   listener:
     image:
-      repository: ghcr.io/fnndsc/pypx-listener
+      repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
-      tag: "1.0.3"
+      tag: "1.0.0"
     podAnnotations: {}
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
     # configuration of Orthanc's modailities to include this service.
     service:
+      enabled: true
       type: ClusterIP
-      port: 11113
+      port: 11111
       # nodePort: 30033
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 200m
-        memory: 256Mi
+    replicas: 1
+    ## manual configuration of OpenTelemetry
+    # env:
+    #   - name: OTEL_RESOURCE_ATTRIBUTES
+    #     value: service.name=oxidicom
+    #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    #     value: http://tempo:4318
+    config:
+      ## number of times 
+      # httpRetries: 3
+      
+      ## number of DICOM listener threads
+      listenerThreads: 4
 
-  # Optional DICOMweb API for PFDCM cached data, useful for connecting with OHIF
-  dicomweb:
-    enabled: false
-    replicaCount: 1
-    image:
-      repository: ghcr.io/fnndsc/pypx-dicomweb
-      pullPolicy: IfNotPresent
-      tag: "latest@sha256:47370ae446098134e3cdf90b7c8b0840f7900057b1c396c5dc921d20a789cd46"
-    podAnnotations: {}
-    service:
-      type: ClusterIP
-      port: 4006
-      # nodePort:
+      ## number of threads to use for pushing files to CUBE
+      pusherThreads: 2
+
+      ## verbose logging
+      # verbose: true
+
+      ## strictPduLength, uncompressedOnly, and maxPduLength are strange DICOM
+      ## options which you probably want to leave as their default values.
+      # strictPduLength: true
+      # uncompressedOnly: true
+      # maxPduLength: 16384
+
+      ## Addresses of the PACS pushing to us. Used for looking up the NumberOfSeriesRelatedInstances.
+      ## Do not specify a value for pacsAddress if you are using the Orthanc sub-chart.
+      # pacsAddress: pacs.server.local:4242
     resources:
+      # It's written in Rust!
+      # with 16 threads, CPU usage peaks at 120m and memory usage peaks at 1.3 GiB
       limits:
-        cpu: 1
-        memory: 512Mi
+        cpu: 500m
+        memory: 1907Mi
       requests:
-        cpu: 1
-        memory: 512Mi
-    rustLog: pypx_dicomweb=DEBUG
+        cpu: 500m
+        memory: 1907Mi
 
 # PACS server
 orthanc:
@@ -519,7 +530,7 @@ orthanc:
       # !!!IMPORTANT!!!
       # To use in combination with pfdcm, you MUST define a modality for
       # `.Values.pfdcm.aet`
-      "CHRISLOCAL": [ "CHRISLOCAL", "NAME-pfdcm-listener", 11113 ]
+      "ChRIS": [ "ChRIS", "NAME-oxidicom", 11111 ]
       # "clearcanvas" : [ "CLEARCANVAS", "192.168.1.1", 104, "ClearCanvas" ]
 
     # Whether Orthanc monitors its metrics (new in Orthanc 1.5.4). If

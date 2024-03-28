@@ -1,0 +1,24 @@
+# The "chris" user is a special user who is hard-coded to be able to see all feeds.
+# They are also hard-coded to be able to register PACSFiles.
+# The oxidicom (pfdcm listener) application needs the "chris" user.
+
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: {{ .Release.Name }}-the-chris-user
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: "the-chris-user"
+    {{- include "cube.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "Automatically created system ChRIS special user \"chris\""
+stringData:
+  CHRIS_USERNAME: "chris"
+  CHRIS_EMAIL: "chris+noreply@babymri.org"
+data:
+  {{- with (lookup "v1" "Secret" .Release.Namespace ( print .Release.Name "-the-chris-user")) }}
+  CHRIS_PASSWORD:  {{ index .data "CHRIS_PASSWORD" }}
+  {{- else }}
+  CHRIS_PASSWORD: {{ randAlphaNum 32 | b64enc | quote }}
+  {{- end }}

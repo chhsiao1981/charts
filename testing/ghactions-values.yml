@@ -12,14 +12,15 @@ cube:
         memory: 400Mi
         cpu: 100m
   server:
+    service:
+      type: NodePort
+      nodePort: 32000
     workers: 2
     resources:
       requests:
         memory: 512Mi
         cpu: 200m
 
-  ingress:
-    nodePort: "32000"
 
 postgresql:
   primary:

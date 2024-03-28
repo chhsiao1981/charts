@@ -1,0 +1,58 @@
+global:
+  podSecurityContext:
+    runAsUser: 10123456
+    runAsGroup: 20987654
+
+cube:
+  server:
+    service:
+      type: NodePort
+      nodePort: 32000
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+  config:
+    GUNICORN_CMD_ARGS: "--workers=4 --timeout=3600"
+
+pfcon:
+  storage:
+    size: 10Gi
+
+pfdcm:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 32001
+  listener:
+    service:
+      type: NodePort
+      nodePort: 32004
+    config:
+      listenerThreads: 4
+      pusherThreads: 4
+      verbose: true
+    env:
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.name=oxidicom
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://tempo.grafana.svc.cluster.local:4318
+    resources:
+      limits:
+        cpu: 500m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 2Gi
+orthanc:
+  service:
+    type: NodePort
+    nodePort: 32003
+  config:
+    dicomModalities:
+      "ChRIS": [ "ChRIS", "cacao-oxidicom", 11111 ]
+    registeredUsers:
+      orthanc: orthanc

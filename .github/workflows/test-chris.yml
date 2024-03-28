@@ -50,9 +50,9 @@ jobs:
       run: kubectl wait --for=condition=ready pod -n ghactions -l app.kubernetes.io/name=chris-server --timeout=300s
     - name: Assert superuser created
       run: |
-        actual="$(kubectl logs --tail=1 -n ghactions -l app.kubernetes.io/name=chris-heart -c set-config)"
+        actual="$(kubectl logs -n ghactions -l app.kubernetes.io/name=chris-heart -c set-config)"
         expected='Created superuser "khris"'
-        if [ "$actual" != "$expected" ]; then
+        if [[ "$actual" != *"$expected"* ]]; then
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
@@ -80,7 +80,7 @@ jobs:
       run: |
         actual="$(kubectl get secret -n ghactions khris-test-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)"
         expected="newpassword1234"
-        if [ "$actual" != "$expected" ]; then
+        if [[ "$actual" != *"$expected"* ]]; then
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi
@@ -102,9 +102,9 @@ jobs:
         exit 1
     - name: Assert superuser password changed
       run: |
-        actual="$(kubectl logs --tail=1 -n ghactions ${{ steps.restart.outputs.new_pod }} -c set-config)"
+        actual="$(kubectl logs -n ghactions ${{ steps.restart.outputs.new_pod }} -c set-config)"
         expected='Updated password for user "khris"'
-        if [ "$actual" != "$expected" ]; then
+        if [[ "$actual" != *"$expected"* ]]; then
           echo "::error ::Expected: >>>$expected<<<    Actual: >>>$actual<<<"
           exit 1
         fi

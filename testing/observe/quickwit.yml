@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: quickwit
+  namespace: observe
+spec:
+  type: ClusterIP
+  selector:
+    app: quickwit
+  ports:
+  - name: http
+    port: 7280
+    targetPort: 7280
+  - name: grpc
+    port: 7281
+    targetPort: 7281
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: quickwit-headless
+  namespace: observe
+spec:
+  clusterIP: None
+  selector:
+    app: quickwit
+  ports:
+  - name: http
+    port: 7280
+    targetPort: 7280
+  - name: grpc
+    port: 7281
+    targetPort: 7281
+---
+
+# create statefulset
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: quickwit
+  namespace: observe
+  labels:
+    app: quickwit
+spec:
+  serviceName: quickwit-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quickwit
+  template:
+    metadata:
+      labels:
+        app: quickwit
+    spec:
+      securityContext:
+        fsGroup: 2000
+        runAsUser: 10000
+        runAsGroup: 3000
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: quickwit
+        image: docker.io/quickwit/quickwit:0.8.0
+        command: [ "quickwit" ]
+        args: [ "run" ]
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        ports:
+        - name: http
+          containerPort: 7280
+        - name: grpc
+          containerPort: 7281
+        volumeMounts:
+        - name: qwdata
+          mountPath: /quickwit/qwdata
+  volumeClaimTemplates:
+  - metadata:
+      name: qwdata
+    spec:
+      accessModes: [ ReadWriteOnce ]
+      resources:
+        requests:
+          storage: 4Gi

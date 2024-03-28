@@ -1,4 +1,5 @@
 {{ if (and .Values.pfdcm.enabled .Values.pfdcm.persistence.enabled (not .Values.pfdcm.persistence.existingClaim)) }}
+# TODO CAN I DELETE PFDCM'S STORAGE?
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

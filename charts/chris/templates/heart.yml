@@ -99,23 +99,27 @@ spec:
                 'password': os.environ['CHRIS_SUPERUSER_PASSWORD'],
                 'email': os.environ['CHRIS_SUPERUSER_EMAIL']
             }
-            users = [superuser_config]
-            if 'PFDCM_CUBES' in os.environ:
-                pfdcm_cubes = json.loads(os.environ['PFDCM_CUBES'])
-                users.append({
-                    'username': pfdcm_cubes['local']['username'],
-                    'password': pfdcm_cubes['local']['password'],
-                    'email': 'pfdcm+noreply@babymri.org'
-                })
+            if (existing_user := User.objects.filter(username=superuser_config['username']).first()) is not None:
+                existing_user.set_password(superuser_config['password'])
+                existing_user.save()
+                print(f'Updated password for user "{existing_user.username}"')
+            else:
+                created_user = User.objects.create_superuser(**superuser_config)
+                print(f'Created superuser "{created_user.username}"')
 
-            for user_config in users:
-                if (existing_user := User.objects.filter(username=user_config['username']).first()) is not None:
-                    existing_user.set_password(user_config['password'])
-                    existing_user.save()
-                    print(f'Updated password for user "{existing_user.username}"')
-                else:
-                    created_user = User.objects.create_superuser(**user_config)
-                    print(f'Created superuser "{created_user.username}"')
+            the_chris_user_config = {
+                'username': os.environ['CHRIS_USERNAME'],
+                'password': os.environ['CHRIS_PASSWORD'],
+                'email': os.environ['CHRIS_EMAIL']
+            }
+            if (existing_user := User.objects.filter(username=the_chris_user_config['username']).first()) is not None:
+                existing_user.set_password(the_chris_user_config['password'])
+                existing_user.save()
+                print(f'Updated password for user "{existing_user.username}"')
+            else:
+                created_user = User.objects.create_user(**the_chris_user_config)
+                print(f'Created user "{created_user.username}"')
+
           {{- include "cube.container" . | nindent 10 }}
             - name: CHRIS_SUPERUSER_USERNAME
               valueFrom:
@@ -132,13 +136,21 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-chris-superuser
                   key: email
-            {{- if .Values.pfdcm.enabled }}
-            - name: PFDCM_CUBES
+            - name: CHRIS_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-pfdcm-services
-                  key: cube.json
-            {{- end }}
+                  name: {{ .Release.Name }}-the-chris-user
+                  key: CHRIS_USERNAME
+            - name: CHRIS_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-the-chris-user
+                  key: CHRIS_EMAIL
+            - name: CHRIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-the-chris-user
+                  key: CHRIS_PASSWORD
 
         - name: wait-rabbitmq
           command:
