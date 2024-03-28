@@ -1,0 +1,108 @@
+{{- define "oxidicom.pacsAddress" -}}
+{{- if .Values.pfdcm.listener.config.pacsAddress -}}
+{{- .Values.pfdcm.listener.config.pacsAddress -}},
+{{- end -}}
+{{- if .Values.orthanc.enabled -}}
+  {{- if not .Values.orthanc.dicomService.enabled -}}
+  {{- fail "Orthanc's .dicomService must be enabled" -}}
+  {{- end -}}
+{{ .Values.orthanc.config.dicomAet }}={{ .Release.Name }}-orthanc-dicom:{{ .Values.orthanc.dicomService.port }},
+{{- end -}}
+{{- end -}}
+{{- if .Values.pfdcm.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-oxidicom
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: oxidicom
+    {{- include "pfdcm.listenerLabels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/description: "ChRIS DICOM receiver"
+spec:
+  replicas: {{ .Values.pfdcm.listener.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: oxidicom
+  template:
+    metadata:
+      {{- with .Values.pfdcm.listener.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: oxidicom
+        {{- include "pfdcm.listenerLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        {{- include "cube.waitServerReady" . | nindent 8 }}
+      containers:
+        - name: oxidicom
+          image: "{{ .Values.pfdcm.listener.image.repository }}:{{ .Values.pfdcm.listener.image.tag }}"
+          imagePullPolicy: {{ .Values.pfdcm.listener.image.pullPolicy }}
+          ports:
+            - name: scp
+              containerPort: {{ .Values.pfdcm.listener.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.pfdcm.listener.resources | nindent 12 }}
+          env:
+            - name: PORT
+              value: {{ .Values.pfdcm.listener.service.port | quote }}
+            - name: CHRIS_FILES_ROOT
+              value: /data
+            - name: CHRIS_URL
+              value: "http://{{ .Release.Name }}-server:{{ .Values.cube.server.service.port }}/api/v1/"
+            - name: CHRIS_SCP_AET
+              value: {{ .Values.pfdcm.aet | quote }}
+            - name: CHRIS_LISTENER_THREADS
+              value: {{ .Values.pfdcm.listener.config.listenerThreads | quote }}
+            - name: CHRIS_PUSHER_THREADS
+              value: {{ .Values.pfdcm.listener.config.pusherThreads | quote }}
+
+              {{- if .Values.pfdcm.listener.config.verbose }}
+            - name: CHRIS_VERBOSE
+              value: {{ .Values.pfdcm.listener.config.verbose | quote }}
+              {{- end }}
+              {{- if .Values.pfdcm.listener.config.httpRetries }}
+            - name: CHRIS_HTTP_RETRIES
+              value: {{ .Values.pfdcm.listener.config.httpRetries | quote }}
+              {{- end }}
+              {{- /* DICOM SCP Options */}}
+              {{- if .Values.pfdcm.listener.config.strictPduLength }}
+            - name: CHRIS_SCP_STRICT
+              value: {{ .Values.pfdcm.listener.config.strictPduLength | quote }}
+              {{- end }}
+              {{- if .Values.pfdcm.listener.config.maxPduLength }}
+            - name: CHRIS_SCP_MAX_PDU_LENGTH
+              value: {{ .Values.pfdcm.listener.config.maxPduLength | quote }}
+              {{- end }}
+              {{- if .Values.pfdcm.listener.config.uncompressedOnly }}
+            - name: CHRIS_SCP_UNCOMPRESSED_ONLY
+              value: {{ .Values.pfdcm.listener.config.uncompressedOnly | quote }}
+              {{- end }}
+              {{- if (include "oxidicom.pacsAddress" .) }}
+            - name: CHRIS_PACS_ADDRESS
+              value: {{ include "oxidicom.pacsAddress" . | quote }}
+              {{- end }}
+
+              {{- /* Extra environment variables, manually specified */}}
+              {{- if .Values.pfdcm.listener.env }}
+              {{- .Values.pfdcm.listener.env | toYaml | nindent 12 }}
+              {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-the-chris-user
+          volumeMounts:
+            - mountPath: /data
+              name: file-storage
+
+      {{- include "cube.pod" . | nindent 6 }}
+      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
+{{ end }}

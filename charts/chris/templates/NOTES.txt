@@ -7,13 +7,13 @@ After that, try logging in as the admin user. The username is "{{ .Values.chris_
 The password can be revealed by running the command
 
     kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode
-{{ if (and .Values.cube.ingress.nodePort .Values.cube.ingress.nodePortHost) }}
+{{ if (and .Values.cube.server.service.nodePort .Values.cube.server.service.nodePortHost) }}
 Your CUBE API address is:
 
-    http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/api/v1/
+    http://{{ .Values.cube.server.service.nodePortHost }}:{{ .Values.cube.server.service.nodePort }}/api/v1/
 
 Here is a one-liner for you to check that everything is up and running:
 
-    curl -i --fail-with-body -u "{{ .Values.chris_admin.username }}:$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)" http://{{ .Values.cube.ingress.nodePortHost }}:{{ .Values.cube.ingress.nodePort }}/chris-admin/api/v1/
+    curl -i --fail-with-body -u "{{ .Values.chris_admin.username }}:$(kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }}-chris-superuser -o jsonpath='{.data.password}' | base64 --decode)" http://{{ .Values.cube.server.service.nodePortHost }}:{{ .Values.cube.server.service.nodePort }}/chris-admin/api/v1/
 
 {{ end }}
