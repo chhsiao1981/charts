@@ -44,8 +44,10 @@ metadata:
     kubernetes.io/description: "Configuration of the CUBE and PACS this PFDCM speaks to"
 stringData:
   {{- /* cube.json and storage.json are both blank, because the related functionality is now handled by oxidicom. */}}
-  cube.json: "{}"
-  storage.json: "{}"
+  cube.json: |
+    {{ .Values.pfdcm.additionalConfig.cube | toJson | default "{}" }}
+  storage.json: |
+    {{ .Values.pfdcm.additionalConfig.storage | toJson | default "{}" }}
   pacs.json: |
     {
       "services": {{ include "pfdcm.localOrthanc" . | fromYaml | merge .Values.pfdcm.additionalConfig.pacs.services | toPrettyJson | nindent 8 }}
