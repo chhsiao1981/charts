@@ -199,27 +199,3 @@ app.kubernetes.io/part-of: chris
 {{- define "pfdcm.listenerService" -}}
 {{ .Release.Name }}-oxidicom
 {{- end -}}
-
-# TODO CAN I DELETE PFDCM STORAGE?
-{{- define "pfdcm.claimName" -}}
-{{ .Values.pfdcm.persistence.existingClaim | default (printf "%s-pfdcm" .Release.Name) }}
-{{- end -}}
-
-{{- define "pfdcm.podAffinityWorkaround" -}}
-{{ if .Values.pfdcm.enablePodAffinityWorkaround }}
-affinity:
-  podAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app.kubernetes.io/instance
-          operator: In
-          values:
-          - {{ .Release.Name }}
-        - key: app.kubernetes.io/name
-          operator: In
-          values:
-          - pfdcm
-      topologyKey: kubernetes.io/hostname
-{{- end }}
-{{- end }}

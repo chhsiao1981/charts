@@ -44,8 +44,6 @@ spec:
               name: data
             - mountPath: /home/dicom/services
               name: config
-            - mountPath: /chris_files
-              name: chris-files
           ports:
             - name: http
               containerPort: {{ .Values.pfdcm.service.port }}
@@ -62,14 +60,10 @@ spec:
 
       volumes:
         - name: data
-          persistentVolumeClaim:
-            claimName: {{ include "pfdcm.claimName" . }}
+          emptyDir:
+            sizeLimit: 1Gi
         - name: config
           secret:
             secretName: {{ .Release.Name }}-pfdcm-services
             optional: false
-        - name: chris-files
-          persistentVolumeClaim:
-            claimName: {{ include "cube.filesVolume" . }}
-      {{- include "cube.podAffinityWorkaround" . | nindent 6 }}
 {{ end }}
