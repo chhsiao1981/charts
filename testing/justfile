@@ -18,7 +18,7 @@ up:
             --set cube.server.service.nodePortHost=$(hostname)
 
 down:
-    helm uninstall -n kk cacao
+    helm uninstall -n kk --wait cacao
     kubectl delete ns kk
 
 # Development Commands
