@@ -1,10 +1,4 @@
-# TODO replace with Grafana and Mimir
-
-# disable most stuff, we get metrics from the OpenTelemetry collector instead.
-defaultRules:
-  create: false
-kubernetesServiceMonitors:
-  enabled: false
+# Consider replacing kube-prometheus-stack with just Grafana and Mimir?
 
 alertmanager:
   enabled: false

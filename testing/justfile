@@ -96,6 +96,13 @@ observe:
     kubectl wait --for=condition=ready -n observe pod -l app.kubernetes.io/name=grafana --timeout=300s
     helm upgrade --install -n observe -f observe/opentelemetry-collector.yaml otel-collector open-telemetry/opentelemetry-collector
 
+linkerd:
+    linkerd check --pre
+    linkerd install --crds | kubectl apply -f -
+    linkerd install | kubectl apply -f -
+    linkerd viz install | kubectl apply -f -
+    linkerd check
+
 # Helper Functions
 # --------------------------------------------------------------------------------
 
