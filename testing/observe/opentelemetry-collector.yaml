@@ -20,7 +20,8 @@ presets:
     extractAllPodAnnotations: false
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubeletstats-receiver for details on the receiver.
   kubeletMetrics:
-    enabled: true
+    # The kube-prometheus-stack is already collecting this data.
+    enabled: false
   # See https://opentelemetry.io/docs/kubernetes/collector/components/#kubernetes-objects-receiver for details on the receiver.
   kubernetesEvents:
     enabled: false
@@ -61,7 +62,6 @@ config:
           endpoint: ${env:MY_POD_IP}:4318
     kubeletstats:
       insecure_skip_verify: true
-
     # prometheus:
     #   config:
     #     scrape_configs:

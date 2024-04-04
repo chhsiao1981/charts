@@ -162,6 +162,7 @@ cube:
       # nodePort:
       ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
       # nodePortHost:
+    podAnnotations: {}
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
     resources:
