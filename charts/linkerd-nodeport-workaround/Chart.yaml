@@ -1,0 +1,15 @@
+apiVersion: v2
+name: linkerd-nodeport-workaround
+description: |
+  A workaround for creating Linkerd ServiceProfile for a NodePort service.
+  Haproxy is deployed in front of the service you want to instrument, so that
+  the ServiceProfile can use the service's cluster internal FQDN.
+
+type: application
+version: 0.1.0
+appVersion: "2.9.7"
+
+maintainers:
+- name: The FNNDSC Dev Team
+  email: dev@babyMRI.org
+  url: https://fnndsc.org
