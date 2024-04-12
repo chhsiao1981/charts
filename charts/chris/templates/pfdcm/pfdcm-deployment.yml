@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: pfdcm
     {{- include "pfdcm.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.pfdcm.replicas | default 1 }}
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name }}

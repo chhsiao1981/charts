@@ -334,6 +334,7 @@ pfdcm:
       termination: edge
       insecureEdgeTerminationPolicy: Redirect
       destinationCACertificate: ''
+  replicas: 1
   maxWorkers: 1
   resources:
     limits:
