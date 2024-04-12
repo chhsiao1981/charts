@@ -1,0 +1,18 @@
+{{- if .Values.httpHealthEndpoint }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "linkerd-nodeport-workaround.fullname" . }}-test-connection"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "linkerd-nodeport-workaround.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: quay.io/prometheus/busybox:latest
+      command: ['wget']
+      args: ['{{ include "linkerd-nodeport-workaround.fullname" . }}:{{ .Values.service.port }}/{{ .Values.httpHealthEndpoint }}']
+  restartPolicy: Never
+{{- end }}
