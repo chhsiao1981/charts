@@ -77,7 +77,7 @@ chris_admin:
 cube:
   image:
     repository: ghcr.io/fnndsc/cube
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
 

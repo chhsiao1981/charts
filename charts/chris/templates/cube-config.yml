@@ -14,7 +14,7 @@ data:
 
   DJANGO_SETTINGS_MODULE: "config.settings.production"
   CHRIS_STORE_URL: "https://cube.chrisproject.org/api/v1/"
-  STORAGE_ENV: "filesystem"
+  STORAGE_ENV: "fslink"
   MEDIA_ROOT: "/data"
 
 ---
