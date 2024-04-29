@@ -3,8 +3,8 @@
 # Name
 #####################
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "chris1222"
+fullnameOverride: "chris1222"
 
 
 # Stuff you can typically ignore
@@ -17,12 +17,12 @@ imagePullSecrets: []
 
 global:
   # storage class to use for persistent volume claims
-  storageClass: ""
+  storageClass: "rc-nfs"
 
   # optional security context to apply to all pods
-  # podSecurityContext:
-  #   runAsUser: 123456
-  #   runAsGroup: 789
+  podSecurityContext:
+    runAsUser: 7748
+    runAsGroup: 1102
 
 
 # Not used
@@ -67,10 +67,10 @@ route:
 #####################
 
 chris_admin:
-  username: khris
+  username: chris
   email: noreply@babymri.org
   # If no password is set, then a random password is created for you.
-  # password:
+  password: chris1234
 
 # ChRIS Backend
 #####################
@@ -79,7 +79,7 @@ cube:
     repository: ghcr.io/fnndsc/cube
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "latest"
 
   # Use inter-pod affinity as a workaround for using a ReadWriteOnce PersistentVolumeClaim
   enablePodAffinityWorkaround: false
@@ -103,14 +103,14 @@ cube:
     DJANGO_SECURE_PROXY_SSL_HEADER: ""
     DJANGO_USE_X_FORWARDED_HOST: "false"
     # enable LDAP login
-    AUTH_LDAP: "false"
-    # AUTH_LDAP_SERVER_URI: "ldap://192.168.0.29:389"
-    # AUTH_LDAP_BIND_DN: "cn=admin,dc=fnndsc,dc=org"
-    # AUTH_LDAP_USER_SEARCH_ROOT: "dc=fnndsc,dc=org"
+    AUTH_LDAP: "true"
+    AUTH_LDAP_SERVER_URI: "ldap://fnndsc.tch.harvard.edu:389"
+    AUTH_LDAP_BIND_DN: "cn=admin,dc=fnndsc"
+    AUTH_LDAP_USER_SEARCH_ROOT: "dc=fnndsc"
 
   ## Additional secret environment variables for CUBE
-  # secrets:
-  #   AUTH_LDAP_BIND_PASSWORD: "admin1234"
+  secrets:
+     AUTH_LDAP_BIND_PASSWORD: "xzaq!@#$"
 
   # Set of default plugins to register with the coupled pfcon (if .pfcon.enabled)
   # Plugins which CUBE is hard-coded to depend on should be listed here.
@@ -128,7 +128,7 @@ cube:
     enabled: false
     size: 100Gi
     accessModes: [ "ReadWriteOnce" ]
-    # storageClass: ""
+    storageClass: "rc-nfs"
 
   # Resources
   #####################
@@ -158,9 +158,9 @@ cube:
   server:
     replicas: 1
     service:
-      type: ClusterIP
+      type: NodePort
       port: 8000
-      # nodePort:
+      nodePort: 31222
       ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
       # nodePortHost:
     podAnnotations: {}
@@ -206,9 +206,11 @@ postgresql:
 
     # Defer control of security configurations to OpenShift
     podSecurityContext:
-      enabled: false
+      enabled: true
+      fsGroup: 1102
     containerSecurityContext:
-      enabled: false
+      enabled: true
+      runAsUser: 7748
   volumePermissions:
     enabled: false
   shmVolume:
@@ -231,14 +233,20 @@ rabbitmq:
   persistence:
     enabled: true
     size: 1Gi
+    storageClass: rc-nfs
+    accessModes: ["ReadWriteMany"]
 
   # Defer control of security configurations to OpenShift
   podSecurityContext:
-    enabled: false
+    enabled: true
+    fsGroup: 1102
   containerSecurityContext:
-    enabled: false
+    enabled: true
+    runAsUser: 7748
   volumePermissions:
     enabled: false
+
+  clusterDomain: k8s.galena.fnndsc
 
 # pfcon: ChRIS compute resource
 #####################
@@ -263,7 +271,7 @@ pfcon:
     existingClaim: ""
     size: 100Gi
     accessModes: [ "ReadWriteOnce" ]
-    # storageClass:
+    storageClass: rc-nfs
 
   pfcon:
     resources:
@@ -301,7 +309,7 @@ pfcon:
     # https://github.com/fnndsc/pman#environment-variables
     # SECRET_KEY, CONTAINER_ENV, STORAGE_TYPE, VOLUME_NAME, and CONTAINER_USER are handled automatically
     config:
-      JOB_LABELS: chrisproject.org/job=plugininstance
+      JOB_LABELS: chrisproject.org/job=plugininstance,chrisproject.org/chris-instance=chris1222
       ENABLE_HOME_WORKAROUND: "yes"
       REMOVE_JOBS: "yes"
       IGNORE_LIMITS: "no"
@@ -316,7 +324,7 @@ pfcon:
 #####################
 
 pfdcm:
-  enabled: false
+  enabled: true
   image:
     repository: ghcr.io/fnndsc/pfdcm
     pullPolicy: IfNotPresent
@@ -327,15 +335,8 @@ pfdcm:
     type: ClusterIP
     port: 4005
     # nodePort:
-  # OpenShift route
   route:
     enabled: false
-    host: chart-example.local
-    tls:
-      termination: edge
-      insecureEdgeTerminationPolicy: Redirect
-      destinationCACertificate: ''
-  replicas: 1
   maxWorkers: 1
   resources:
     limits:
@@ -346,7 +347,7 @@ pfdcm:
       memory: 1Gi
 
   # DICOM application entity title
-  aet: "ChRIS"
+  aet: "CHRISV3"
 
   # Additional pfdcm configuration. Usually, you'll want to leave this empty.
   # pfdcm will be preconfigured with the CUBE and Orthanc of this chart.
@@ -363,14 +364,14 @@ pfdcm:
       #   storagetype: fs
       #   storepath: /files
     pacs:
-      services: {}
-        # orthanc:
-        #   info:
-        #     aet: CHRISLOCAL
-        #     aet_listener: ORTHANC
-        #     aec: ORTHANC
-        #     serverIP: orthanc
-        #     serverPort: 4242
+      services: 
+        PACSDCM:
+          info:
+            aet: CHRISV3
+            aet_listener: CHRISV3
+            aec: PACSDCM
+            serverIP: 134.174.12.21
+            serverPort: "104"
 
   # DICOM listener for pfdcm. Enabled when pfdcm is enabled.
   listener:
@@ -384,9 +385,9 @@ pfdcm:
     # configuration of Orthanc's modailities to include this service.
     service:
       enabled: true
-      type: ClusterIP
+      type: NodePort
       port: 11111
-      # nodePort: 30033
+      nodePort: 31032
     replicas: 1
     ## manual configuration of OpenTelemetry
     # env:
@@ -416,6 +417,7 @@ pfdcm:
       ## Addresses of the PACS pushing to us. Used for looking up the NumberOfSeriesRelatedInstances.
       ## Do not specify a value for pacsAddress if you are using the Orthanc sub-chart.
       # pacsAddress: pacs.server.local:4242
+      pacsAddress: PACSDCM=134.174.12.21:104
     resources:
       # It's written in Rust!
       # with 16 threads, CPU usage peaks at 120m and memory usage peaks at 1.3 GiB
