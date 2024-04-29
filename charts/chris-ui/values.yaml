@@ -6,11 +6,11 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/fnndsc/chris_ui
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-chris_ui_host:
-pfdcm_host:
+  tag: "latest-staging"
+chris_ui_host: rc-live.tch.harvard.edu:31222
+pfdcm_host: rc-live.tch.harvard.edu:31032
 
 imagePullSecrets: []
 nameOverride: ""
@@ -24,9 +24,9 @@ podSecurityContext: {}
 securityContext: {}
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 8020
-  # nodePort:
+  nodePort: 31020
 
 resources: {}
 
