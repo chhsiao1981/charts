@@ -156,6 +156,7 @@ cube:
         cpu: 250m
 
   server:
+    replicas: 1
     service:
       type: ClusterIP
       port: 8000
