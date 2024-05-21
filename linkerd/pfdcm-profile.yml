@@ -1,0 +1,27 @@
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: chris1222-pfdcm.chris.svc.k8s.galena.fnndsc
+  namespace: chris-staging
+  labels:
+    app.kubernetes.io/part-of: chris-staging
+spec:
+  routes:
+    - name: '/api/v1/PACS/thread/pypx/'
+      condition:
+        pathRegex: '/api/v1/PACS/thread/pypx/'
+        method: POST
+      isRetryable: true
+      timeout: 60s
+    - name: '/api/v1/PACS/sync/pypx/'
+      condition:
+        pathRegex: '/api/v1/PACS/sync/pypx/'
+        method: POST
+      isRetryable: true
+      timeout: 60s
+  # https://linkerd.io/2.15/reference/service-profiles/#retry-budget
+  retryBudget:
+    retryRatio: 0.2
+    minRetriesPerSecond: 10
+    ttl: 60s
+

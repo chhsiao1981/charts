@@ -163,7 +163,8 @@ cube:
       nodePort: 31222
       ## nodePortHost does nothing. It is simply used to print the URL of CUBE in the NOTES
       # nodePortHost:
-    podAnnotations: {}
+    podAnnotations: 
+      linkerd.io/inject: enabled
     ## resources for the HTTP server (WSGI).
     ## Default values should be okay. About 256Mi of memory is needed per idle worker.
     resources:
@@ -203,6 +204,12 @@ postgresql:
     persistence:
       enabled: true
       size: 8Gi
+
+    podAnnotations:
+      linkerd.io/inject: enabled
+    service:
+      annotations:
+        config.linkerd.io/opaque-ports: "5432"
 
     # Defer control of security configurations to OpenShift
     podSecurityContext:
@@ -254,11 +261,11 @@ rabbitmq:
 pfcon:
   enabled: true
 
-  name: "innetwork"
+  name: "galena-staging"
   description: "Kubernetes cluster compute resource"
   replicaCount: 1
-  podAnnotations: {}
-
+  podAnnotations:
+    fnndsc.tch.harvard.edu/src: /neuro/labs/grantlab/research/prod/galena/helm/chris1222
   service:
     type: ClusterIP
     port: 5005
@@ -289,7 +296,7 @@ pfcon:
     # Recommended to keep as-is
     config:
       innetwork: true
-      storageEnv: filesystem
+      storageEnv: fslink
 
   pman:
     # It is unnecessary to increase pman's resources to above the minimum because
@@ -329,14 +336,16 @@ pfdcm:
     repository: ghcr.io/fnndsc/pfdcm
     pullPolicy: IfNotPresent
     tag: "3.1.22"
-  podAnnotations: {}
+  podAnnotations: 
+    linkerd.io/inject: enabled
+    fnndsc.tch.harvard.edu/src: /neuro/labs/grantlab/research/prod/galena/helm/chris1222
   service:
     enabled: true
+    # note: pfdcm is accessible via a NodePort defined in linkerd/pfdcm-workaround-values.yaml
     type: ClusterIP
-    port: 4005
+    # port: 4005
     # nodePort:
-  route:
-    enabled: false
+  replicas: 1
   maxWorkers: 1
   resources:
     limits:
@@ -347,6 +356,8 @@ pfdcm:
       memory: 1Gi
 
   # DICOM application entity title
+  # The hospital FUJI PACS, called "PACSDCM", is configured to recognize
+  # us as "CHRISV3" so our AET *must* be "CHRISV3"
   aet: "CHRISV3"
 
   # Additional pfdcm configuration. Usually, you'll want to leave this empty.
@@ -354,17 +365,18 @@ pfdcm:
   # If this pfdcm interacts with multiple CUBEs or multiple PACS servers,
   # add them here.
   additionalConfig:
-    cube: {}
-      # local:
-      #   url: https://cube.example.org/api/v1/
-      #   username: pfdcm
-      #   password: pfdcm1234
+    cube:
+      chris1222:
+        url: http://rc-live.tch.harvard.edu:12222/api/v1/
+        username: "I AM DEPRECATED"
+        password: "PLEASE DO NOT DEPEND ON ME ANYMORE."
     storage: {}
       # local:
       #   storagetype: fs
       #   storepath: /files
     pacs:
       services: 
+        # Boston Children's Hospital FUJI PACS
         PACSDCM:
           info:
             aet: CHRISV3
@@ -379,22 +391,23 @@ pfdcm:
       repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
       tag: "1.0.2"
-    podAnnotations: {}
+    podAnnotations: 
+      fnndsc.tch.harvard.edu/src: /neuro/labs/grantlab/research/prod/galena/helm/chris1222
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
     # configuration of Orthanc's modailities to include this service.
     service:
       enabled: true
       type: NodePort
-      port: 11111
+      # port: 11111
       nodePort: 31032
     replicas: 1
     ## manual configuration of OpenTelemetry
-    # env:
-    #   - name: OTEL_RESOURCE_ATTRIBUTES
-    #     value: service.name=oxidicom
-    #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    #     value: http://tempo:4318
+    env:
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.name=oxidicom-staging
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-collector-for-quickwit-traces-opentelemetry-collector.monitoring.svc.k8s.galena.fnndsc:4318
     config:
       ## number of times 
       # httpRetries: 3
