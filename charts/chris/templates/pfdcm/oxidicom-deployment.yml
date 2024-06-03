@@ -96,9 +96,6 @@ spec:
               {{- if .Values.pfdcm.listener.env }}
               {{- .Values.pfdcm.listener.env | toYaml | nindent 12 }}
               {{- end }}
-          envFrom:
-            - secretRef:
-                name: {{ .Release.Name }}-the-chris-user
           volumeMounts:
             - mountPath: /data
               name: file-storage
