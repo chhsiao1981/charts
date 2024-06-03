@@ -1,12 +1,25 @@
-{{- define "oxidicom.pacsAddress" -}}
-{{- if .Values.pfdcm.listener.config.pacsAddress -}}
-{{- .Values.pfdcm.listener.config.pacsAddress -}},
+{{- define "orthanc.dicomService" -}}
+{{ .Release.Name }}-orthanc-dicom:{{ .Values.orthanc.dicomService.port }}
 {{- end -}}
-{{- if .Values.orthanc.enabled -}}
-  {{- if not .Values.orthanc.dicomService.enabled -}}
-  {{- fail "Orthanc's .dicomService must be enabled" -}}
-  {{- end -}}
-{{ .Values.orthanc.config.dicomAet }}={{ .Release.Name }}-orthanc-dicom:{{ .Values.orthanc.dicomService.port }},
+
+{{- define "oxidicom.pacsAddress" -}}
+{{- if (and .Values.orthanc.enabled (not .Values.orthanc.dicomService.enabled)) -}}
+{{- fail ".orthanc.dicomService.enabled must be true" -}}
+{{- end -}}
+{{- if .Values.pfdcm.listener.config.pacsAddress -}}
+{{- if (and .Values.orthanc.enabled (not (contains (include "orthanc.dicomService" .) .Values.pfdcm.listener.config.pacsAddress))) -}}
+{{- fail (printf "pfdcm.listener.config.pacsAddress must be configured with %s=\"%s\"" .Values.orthanc.config.dicomAet (include "orthanc.dicomService" .)) -}}
+{{- end -}}
+{{- .Values.pfdcm.listener.config.pacsAddress -}}
+{{- else -}}
+{{ "{" }}{{ .Values.orthanc.config.dicomAet }}={{ include "orthanc.dicomService" . | quote }}{{ "}" }}
+{{- end -}}
+{{- end -}}
+{{- define "oxidicom.databasePoolSize" -}}
+{{- if .Values.pfdcm.listener.config.databasePool -}}
+{{- .Values.pfdcm.listener.config.databasePool -}}
+{{- else if .Values.postgresql.primary.resources.requests.cpu -}}
+{{- .Values.postgresql.primary.resources.requests.cpu -}}
 {{- end -}}
 {{- end -}}
 {{- if .Values.pfdcm.enabled -}}
@@ -53,42 +66,59 @@ spec:
           resources:
             {{- toYaml .Values.pfdcm.listener.resources | nindent 12 }}
           env:
-            - name: PORT
+            - name: OXIDICOM_DB_CONNECTION
+              valueFrom:
+                secretKeyRef:
+                  {{- if not .Values.postgresql.serviceBindings.enabled }}
+                  {{- fail "Oxidicom requires the value .postgresql.serviceBindings.enabled: true" }}
+                  {{- end }}
+                  name: {{ .Release.Name }}-postgresql-svcbind-custom-user
+                  key: uri
+            - name: OXIDICOM_LISTENER_PORT
               value: {{ .Values.pfdcm.listener.service.port | quote }}
-            - name: CHRIS_FILES_ROOT
+            - name: OXIDICOM_FILES_ROOT
               value: /data
-            - name: CHRIS_URL
-              value: "http://{{ .Release.Name }}-server:{{ .Values.cube.server.service.port }}/api/v1/"
-            - name: CHRIS_SCP_AET
+            - name: OXIDICOM_SCP_AET
               value: {{ .Values.pfdcm.aet | quote }}
-            - name: CHRIS_LISTENER_THREADS
+              {{- if (include "oxidicom.databasePoolSize" .) }}
+            - name: OXIDICOM_DB_POOL
+              value: {{ include "oxidicom.databasePoolSize" . | quote }}
+              {{- end }}
+              {{- if .Values.pfdcm.listener.config.batchSize }}
+            - name: OXIDICOM_DB_BATCH_SIZE
+              value: {{ .Values.pfdcm.listener.config.batchSize | quote }}
+              {{- end }}
+              {{- if .Values.pfdcm.listener.config.listenerThreads }}
+            - name: OXIDICOM_LISTENER_THREADS
               value: {{ .Values.pfdcm.listener.config.listenerThreads | quote }}
-            - name: CHRIS_PUSHER_THREADS
-              value: {{ .Values.pfdcm.listener.config.pusherThreads | quote }}
-
+              {{- end }}
               {{- if .Values.pfdcm.listener.config.verbose }}
-            - name: CHRIS_VERBOSE
+            - name: OXIDICOM_VERBOSE
               value: {{ .Values.pfdcm.listener.config.verbose | quote }}
               {{- end }}
-              {{- if .Values.pfdcm.listener.config.httpRetries }}
-            - name: CHRIS_HTTP_RETRIES
-              value: {{ .Values.pfdcm.listener.config.httpRetries | quote }}
+              {{- if .Values.pfdcm.listener.config.tokioThreads }}
+            - name: TOKIO_WORKER_THREADS
+              value: {{ .Values.pfdcm.listener.config.tokioThreads | quote }}
               {{- end }}
               {{- /* DICOM SCP Options */}}
               {{- if .Values.pfdcm.listener.config.strictPduLength }}
-            - name: CHRIS_SCP_STRICT
+            - name: OXIDICOM_SCP_STRICT
               value: {{ .Values.pfdcm.listener.config.strictPduLength | quote }}
               {{- end }}
               {{- if .Values.pfdcm.listener.config.maxPduLength }}
-            - name: CHRIS_SCP_MAX_PDU_LENGTH
+            - name: OXIDICOM_SCP_MAX_PDU_LENGTH
               value: {{ .Values.pfdcm.listener.config.maxPduLength | quote }}
               {{- end }}
               {{- if .Values.pfdcm.listener.config.uncompressedOnly }}
-            - name: CHRIS_SCP_UNCOMPRESSED_ONLY
+            - name: OXIDICOM_SCP_UNCOMPRESSED_ONLY
               value: {{ .Values.pfdcm.listener.config.uncompressedOnly | quote }}
               {{- end }}
+              {{- if .Values.pfdcm.listener.config.promiscuous }}
+            - name: OXIDICOM_SCP_PROMISCUOUS
+              value: {{ .Values.pfdcm.listener.config.promiscuous | quote }}
+              {{- end }}
               {{- if (include "oxidicom.pacsAddress" .) }}
-            - name: CHRIS_PACS_ADDRESS
+            - name: OXIDICOM_PACS_ADDRESS
               value: {{ include "oxidicom.pacsAddress" . | quote }}
               {{- end }}
 
