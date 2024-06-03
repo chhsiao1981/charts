@@ -186,6 +186,12 @@ postgresql:
     database: "chris"
     username: "chris"
 
+  # Create secret for service binding (Experimental)
+  # Ref: https://servicebinding.io/service-provider/
+  serviceBindings:
+    # required if pfdcm.listener.enabled: true
+    enabled: true
+
   # one of: [standalone, replication]
   # Replication is supported, see upstream README.md for configuration.
   architecture: standalone
@@ -336,14 +342,14 @@ pfdcm:
       insecureEdgeTerminationPolicy: Redirect
       destinationCACertificate: ''
   replicas: 1
-  maxWorkers: 1
+  maxWorkers: 8
   resources:
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 4Gi
     requests:
       cpu: 1
-      memory: 1Gi
+      memory: 4Gi
 
   # DICOM application entity title
   aet: "ChRIS"
@@ -377,7 +383,7 @@ pfdcm:
     image:
       repository: ghcr.io/fnndsc/oxidicom
       pullPolicy: IfNotPresent
-      tag: "1.0.2"
+      tag: "2.0.0"
     podAnnotations: {}
     # The PACS server must be configured to push to this service.
     # If using Orthanc, the Helm chart will help you validate your
@@ -393,16 +399,22 @@ pfdcm:
     #   - name: OTEL_RESOURCE_ATTRIBUTES
     #     value: service.name=oxidicom
     #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    #     value: http://tempo:4318
+    #     value: http://tempo:4317
+    
+    # Optional configurations of oxidicom.
     config:
-      ## number of times 
-      # httpRetries: 3
-      
       ## number of DICOM listener threads
-      listenerThreads: 4
+      # listenerThreads: 8
 
-      ## number of threads to use for pushing files to CUBE
-      pusherThreads: 2
+      ## number of Tokio runtime threads
+      ## ref: https://github.com/FNNDSC/oxidicom/tree/v2.0.0?tab=readme-ov-file#performance-tuning
+      # tokioThreads: 8
+
+      ## size of database connection pool
+      # databasePool: 10
+
+      ## maximum number of PACS files to register per database command
+      # batchSize: 20
 
       ## verbose logging
       # verbose: true
@@ -412,19 +424,22 @@ pfdcm:
       # strictPduLength: true
       # uncompressedOnly: true
       # maxPduLength: 16384
+      ## Whether to accept unknown DICOM transfer syntaxes.
+      # promiscuous: true
 
       ## Addresses of the PACS pushing to us. Used for looking up the NumberOfSeriesRelatedInstances.
-      ## Do not specify a value for pacsAddress if you are using the Orthanc sub-chart.
-      # pacsAddress: pacs.server.local:4242
+      ## Do not specify a value for pacsAddress if you are using only the Orthanc sub-chart.
+      ## Value must be a string in the form `{AET="5.6.7.8:11111", MGH="9.10.11.12:33333"}`
+      # pacsAddress: '{HOSPITAL="pacs:4242"}'
     resources:
       # It's written in Rust!
-      # with 16 threads, CPU usage peaks at 120m and memory usage peaks at 1.3 GiB
+      # Memory usage typically stays under 20MiB, unless there is backpressure from slow disk or database write speed.
       limits:
-        cpu: 500m
-        memory: 1907Mi
+        cpu: 1
+        memory: 2Gi
       requests:
-        cpu: 500m
-        memory: 1907Mi
+        cpu: 1
+        memory: 2Gi
 
 # PACS server
 orthanc:

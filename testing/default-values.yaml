@@ -44,14 +44,13 @@ pfdcm:
       type: NodePort
       nodePort: 32004
     config:
-      listenerThreads: 4
-      pusherThreads: 4
       verbose: true
+      promiscuous: true
     env:
       - name: OTEL_RESOURCE_ATTRIBUTES
         value: service.name=oxidicom
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: http://otel-collector-opentelemetry-collector.observe.svc.cluster.local:4318
+        value: http://otel-collector-opentelemetry-collector.observe.svc.cluster.local:4317
     resources:
       limits:
         cpu: 500m

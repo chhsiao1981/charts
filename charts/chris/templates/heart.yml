@@ -106,20 +106,6 @@ spec:
             else:
                 created_user = User.objects.create_superuser(**superuser_config)
                 print(f'Created superuser "{created_user.username}"')
-
-            the_chris_user_config = {
-                'username': os.environ['CHRIS_USERNAME'],
-                'password': os.environ['CHRIS_PASSWORD'],
-                'email': os.environ['CHRIS_EMAIL']
-            }
-            if (existing_user := User.objects.filter(username=the_chris_user_config['username']).first()) is not None:
-                existing_user.set_password(the_chris_user_config['password'])
-                existing_user.save()
-                print(f'Updated password for user "{existing_user.username}"')
-            else:
-                created_user = User.objects.create_user(**the_chris_user_config)
-                print(f'Created user "{created_user.username}"')
-
           {{- include "cube.container" . | nindent 10 }}
             - name: CHRIS_SUPERUSER_USERNAME
               valueFrom:
@@ -136,21 +122,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-chris-superuser
                   key: email
-            - name: CHRIS_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-the-chris-user
-                  key: CHRIS_USERNAME
-            - name: CHRIS_EMAIL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-the-chris-user
-                  key: CHRIS_EMAIL
-            - name: CHRIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-the-chris-user
-                  key: CHRIS_PASSWORD
 
         - name: wait-rabbitmq
           command:
