@@ -10,7 +10,8 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest-staging"
 chris_ui_host: rc-live.tch.harvard.edu:31222
-pfdcm_host: rc-live.tch.harvard.edu:31032
+pfdcm_host: rc-live.tch.harvard.edu:31031
+# pfdcm_host: ''
 
 imagePullSecrets: []
 nameOverride: ""

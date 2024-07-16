@@ -136,6 +136,10 @@ volumes:
   - name: file-storage
     persistentVolumeClaim:
       claimName: {{ include "cube.filesVolume" . }}
+{{- if .Values.cube.nodeSelector }}
+nodeSelector:
+  {{- toYaml .Values.cube.nodeSelector | nindent 2 }}
+{{- end}}
 {{- if .Values.global.podSecurityContext }}
 securityContext:
   {{- toYaml .Values.global.podSecurityContext | nindent 2 }}
